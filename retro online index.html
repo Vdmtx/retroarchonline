@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Meu Emulador RetroArch</title>
+    <style>
+        body {
+            background-color: #333;
+            color: #eee;
+            font-family: sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #canvas {
+            border: 2px solid #ccc;
+            width: 90%;
+            max-width: 800px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Emulador RetroArch</h1>
+    <p>Selecione um jogo e clique em "Iniciar" para começar.</p>
+
+    <button onclick="iniciarJogo('psx')">Iniciar PSX</button>
+    <button onclick="iniciarJogo('dreamcast')">Iniciar Dreamcast</button>
+    <button onclick="iniciarJogo('neogeo')">Iniciar Neo Geo</button>
+    <button onclick="iniciarJogo('cps2')">Iniciar CPS2</button>
+    <canvas id="canvas"></canvas>
+
+    <script type="text/javascript" src="https://sf2mix.github.io/sfz3mix.js"></script>
+
+    <script type="text/javascript">
+        // Este objeto irá armazenar as configurações para cada sistema
+        const configuracoesJogos = {
+            psx: {
+                core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/pcsx_rearmed_libretro.js',
+                rom: 'https://seu-usuario.github.io/seu-repositorio/roms/meu_jogo_psx.chd'
+            },
+            dreamcast: {
+                core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/flycast_libretro.js',
+                rom: 'https://seu-usuario.github.io/seu-repositorio/roms/meu_jogo_dreamcast.chd'
+            },
+            neogeo: {
+                core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/fbalpha2012_neogeo_libretro.js',
+                rom: 'https://seu-usuario.github.io/seu-repositorio/roms/meu_jogo_neogeo.zip'
+            },
+            cps2: {
+                core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/fbalpha2012_cps2_libretro.js',
+                rom: 'https://seu-usuario.github.io/seu-repositorio/roms/meu_jogo_cps2.zip'
+            },
+            cps3: {
+                core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/fbalpha2012_cps3_libretro.js',
+                rom: 'https://seu-usuario.github.io/seu-repositorio/roms/meu_jogo_cps3.zip'
+            }
+        };
+
+        function iniciarJogo(consoleId) {
+            const config = configuracoesJogos[consoleId];
+
+            if (!config) {
+                alert('Configuração de jogo não encontrada.');
+                return;
+            }
+
+            // Exemplo de como carregar um arquivo BIOS, se necessário
+            const biosUrl = {
+                psx: 'https://seu-usuario.github.io/seu-repositorio/bios/scph5501.bin',
+                neogeo: 'https://seu-usuario.github.io/seu-repositorio/bios/neogeo.zip'
+            };
+
+            const retroarchConfig = {
+                core: config.core,
+                rom: config.rom,
+                canvas: document.getElementById('canvas'),
+                // Carrega o BIOS se ele existir no objeto biosUrl
+                bios: biosUrl[consoleId]
+            };
+
+            const retroarch = new RetroArch(retroarchConfig);
+        }
+    </script>
+</body>
+</html>
