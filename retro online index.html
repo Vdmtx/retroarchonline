@@ -29,10 +29,8 @@
     <p>Selecione um jogo e clique em "Iniciar" para começar.</p>
 
     <button onclick="iniciarJogo('psx')">Iniciar PSX</button>
-    <button onclick="iniciarJogo('dreamcast')">Iniciar Dreamcast</button>
-    <button onclick="iniciarJogo('neogeo')">Iniciar Neo Geo</button>
-    <button onclick="iniciarJogo('cps2')">Iniciar CPS2</button>
-    <button onclick="iniciarJogo('cps3')">Iniciar CPS3</button>
+    <button onclick="iniciarJogo('sf2prime')">Street Fighter Prime</button>
+    <button onclick="iniciarJogo('sfz3mix')">Street Fighter Z3 Mix</button>
 
     <canvas id="canvas"></canvas>
 
@@ -43,36 +41,21 @@
         const configuracoesJogos = {
             psx: {
                 core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/pcsx_rearmed_libretro.js',
-                // Link atualizado para o seu repositório
                 rom: 'https://vdmtx.github.io/retroarchonline/roms/meu_jogo_psx.chd'
             },
-            dreamcast: {
-                core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/flycast_libretro.js',
-                // Link atualizado para o seu repositório
-                rom: 'https://vdmtx.github.io/retroarchonline/roms/meu_jogo_dreamcast.chd'
-            },
-            neogeo: {
-                core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/fbalpha2012_neogeo_libretro.js',
-                // Link atualizado para o seu repositório
-                rom: 'https://vdmtx.github.io/retroarchonline/roms/meu_jogo_neogeo.zip'
-            },
-            cps2: {
+            sf2prime: {
                 core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/fbalpha2012_cps2_libretro.js',
-                // Link atualizado para o seu repositório
-                rom: 'https://vdmtx.github.io/retroarchonline/roms/meu_jogo_cps2.zip'
+                rom: 'https://vdmtx.github.io/retroarchonline/roms/sf2prime.zip'
             },
-            cps3: {
-                core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/fbalpha2012_cps3_libretro.js',
-                // Link atualizado para o seu repositório
-                rom: 'https://vdmtx.github.io/retroarchonline/roms/meu_jogo_cps3.zip'
+            sfz3mix: {
+                core: 'https://cdn.jsdelivr.net/gh/libretro/retroarch-web@master/cores/fbalpha2012_cps2_libretro.js',
+                rom: 'https://vdmtx.github.io/retroarchonline/roms/sfz3mix.7z'
             }
         };
-
+        
         // Este objeto armazena os links dos BIOS, se houver
         const biosUrl = {
-            // Link atualizado para o seu repositório
             psx: 'https://vdmtx.github.io/retroarchonline/bios/scph5501.bin',
-            // Link atualizado para o seu repositório
             neogeo: 'https://vdmtx.github.io/retroarchonline/bios/neogeo.zip'
         };
 
@@ -88,7 +71,6 @@
                 core: config.core,
                 rom: config.rom,
                 canvas: document.getElementById('canvas'),
-                // Carrega o BIOS se ele existir no objeto biosUrl
                 bios: biosUrl[consoleId]
             };
 
