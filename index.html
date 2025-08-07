@@ -34,7 +34,7 @@
 
     <canvas id="canvas"></canvas>
 
-    <script type="text/javascript" src="https://sf2mix.github.io/sfz3mix.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/libretro-web/retroarch.js"></script>
 
     <script type="text/javascript">
         // Este objeto armazena as configurações para cada sistema
@@ -66,15 +66,14 @@
                 alert('Configuração de jogo não encontrada.');
                 return;
             }
-
-            const retroarchConfig = {
+            
+            // A nova forma de carregar o RetroArch
+            RetroArch.start({
                 core: config.core,
                 rom: config.rom,
                 canvas: document.getElementById('canvas'),
                 bios: biosUrl[consoleId]
-            };
-
-            const retroarch = new RetroArch(retroarchConfig);
+            });
         }
     </script>
 </body>
