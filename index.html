@@ -6,85 +6,325 @@
     <title>🎮 Minha Biblioteca Arcade</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0a; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
-        h1 { color: #00ff88; text-align: center; margin-bottom: 30px; }
-        .success-box { background: #00ff8833; border: 2px solid #00ff88; padding: 20px; border-radius: 8px; margin: 20px auto; max-width: 600px; }
-        .success-box h3 { color: #00ff88; margin-bottom: 10px; }
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
-        .game-card { background: #1a1a2e; border: 2px solid #333; border-radius: 8px; padding: 15px; cursor: pointer; text-align: center; }
-        .game-card:hover { border-color: #00ff88; transform: translateY(-3px); }
-        .game-icon { font-size: 48px; margin-bottom: 10px; }
-        .game-title { font-weight: bold; margin-bottom: 5px; }
-        .game-size { color: #888; font-size: 12px; }
-        #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
-        #game { width: 100%; height: 100%; }
-        #back-btn { position: fixed; top: 10px; left: 10px; z-index: 1001; background: #000; color: #fff; border: 2px solid #00ff88; padding: 10px 20px; cursor: pointer; font-weight: bold; }
-        #loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 30px; border: 2px solid #00ff88; border-radius: 8px; z-index: 2000; text-align: center; }
-        #loading h2 { color: #00ff88; margin-bottom: 20px; }
-        .progress-bar { width: 300px; height: 20px; background: #1a1a2e; border: 1px solid #00ff88; }
-        .progress-fill { height: 100%; background: #00ff88; width: 0%; }
-        #statusText { margin-top: 10px; color: #888; }
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 {
+            color: #00ff88;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-shadow: 0 0 20px rgba(0,255,136,0.5);
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto 30px;
+            padding: 0 20px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #333;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .search-box input:focus {
+            border-color: #00ff88;
+            background: rgba(255,255,255,0.15);
+        }
+        .stats {
+            text-align: center;
+            color: #00ff88;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .game-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,255,136,0.1), transparent);
+            transition: left 0.5s;
+        }
+        .game-card:hover::before {
+            left: 100%;
+        }
+        .game-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: #00ff88;
+            box-shadow: 0 10px 30px rgba(0,255,136,0.3);
+        }
+        .game-icon {
+            font-size: 56px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 10px rgba(0,255,136,0.3));
+        }
+        .game-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .game-size {
+            color: #888;
+            font-size: 12px;
+        }
+        #game-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+        }
+        #game {
+            width: 100%;
+            height: 100%;
+        }
+        #back-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: rgba(0,0,0,0.9);
+            color: #fff;
+            border: 2px solid #00ff88;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        #back-btn:hover {
+            background: #00ff88;
+            color: #000;
+            transform: scale(1.05);
+        }
+        #loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 40px;
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            z-index: 2000;
+            text-align: center;
+            min-width: 400px;
+            box-shadow: 0 0 40px rgba(0,255,136,0.3);
+        }
+        #loading h2 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #1a1a2e;
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc6a);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #statusText {
+            margin-top: 10px;
+            color: #888;
+            font-size: 14px;
+        }
+        .error-box {
+            background: rgba(255,0,0,0.1);
+            border: 2px solid #ff0000;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: center;
+        }
+        .error-box h3 {
+            color: #ff4444;
+            margin-bottom: 10px;
+        }
+        .loading-text {
+            text-align: center;
+            padding: 40px;
+            color: #00ff88;
+            font-size: 18px;
+            grid-column: 1 / -1;
+        }
+        @media (max-width: 768px) {
+            .game-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+                padding: 10px;
+            }
+            .game-icon {
+                font-size: 40px;
+            }
+        }
     </style>
 </head>
 <body>
     <h1>🎮 Minha Biblioteca Arcade</h1>
-    <div id="status"></div>
-    <div class="game-grid" id="gameGrid"></div>
+    <p class="subtitle">Clique em um jogo para jogar online • Sem download necessário</p>
+    
+    <div class="search-box">
+        <input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()">
+    </div>
+    
+    <div class="stats" id="stats"></div>
+    <div class="game-grid" id="gameGrid">
+        <div class="loading-text">🔄 Escaneando pasta roms...</div>
+    </div>
+
     <div id="loading">
         <h2>🎮 Carregando...</h2>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
         <p id="statusText">Preparando...</p>
     </div>
+
     <div id="game-container">
         <button id="back-btn" onclick="voltar()">← Voltar</button>
         <div id="game"></div>
     </div>
 
     <script>
-        const ROMS_URL = 'https://vdmtx.github.io/retroarchonline/roms/';
+        const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/';
         let jogos = [];
+        let jogosFiltrados = [];
 
-        async function carregarJogos() {
+        // Varre a pasta roms automaticamente
+        async function varrerPastaRoms() {
             try {
-                const response = await fetch(ROMS_URL);
+                const response = await fetch(ROMS_BASE);
+                if (!response.ok) throw new Error('Não foi possível acessar a pasta roms');
+                
                 const html = await response.text();
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 const links = doc.querySelectorAll('a');
                 
-                jogos = Array.from(links)
-                    .map(link => link.textContent.trim())
-                    .filter(name => name.toLowerCase().endsWith('.zip'))
-                    .map(nome => ({
-                        nome: nome.replace(/\.zip$/i, ''),
-                        arquivo: nome
-                    }));
+                jogos = [];
+                links.forEach(link => {
+                    const nome = link.textContent.trim();
+                    if (nome.toLowerCase().endsWith('.zip')) {
+                        jogos.push({
+                            nome: nome.replace(/\.zip$/i, '').replace(/[_-]/g, ' '),
+                            arquivo: nome,
+                            url: ROMS_BASE + encodeURIComponent(nome)
+                        });
+                    }
+                });
                 
-                document.getElementById('status').innerHTML = `
-                    <div class="success-box">
-                        <h3>✅ ${jogos.length} jogo(s)!</h3>
-                        <p>Clique para jogar</p>
-                    </div>
-                `;
+                if (jogos.length === 0) {
+                    throw new Error('Nenhum arquivo ZIP encontrado na pasta roms');
+                }
                 
-                document.getElementById('gameGrid').innerHTML = jogos.map(jogo => `
-                    <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}')">
-                        <div class="game-icon">🕹️</div>
-                        <div class="game-title">${jogo.nome}</div>
-                        <div class="game-size">Clique para jogar</div>
-                    </div>
-                `).join('');
+                jogosFiltrados = [...jogos];
+                renderizarJogos();
+                
             } catch (error) {
-                document.getElementById('status').innerHTML = `
-                    <div style="background:#f003;border:2px solid #f00;padding:20px;border-radius:8px;text-align:center;color:#f88;">
-                        <h3>❌ Erro</h3>
-                        <p>${error.message}</p>
-                        <p style="font-size:12px;margin-top:10px;">
-                            Verifique se a pasta /roms/ existe e tem arquivos ZIP
+                document.getElementById('gameGrid').innerHTML = `
+                    <div class="error-box" style="grid-column: 1/-1;">
+                        <h3>❌ Erro ao carregar</h3>
+                        <p><strong>${error.message}</strong></p>
+                        <p style="margin-top: 10px; font-size: 12px; color: #888;">
+                            URL: ${ROMS_BASE}<br><br>
+                            Verifique se:<br>
+                            1. A pasta /roms/ existe no repositório<br>
+                            2. Existem arquivos .zip na pasta<br>
+                            3. O GitHub Pages está ativo
                         </p>
                     </div>
                 `;
             }
+        }
+
+        function renderizarJogos() {
+            const grid = document.getElementById('gameGrid');
+            const stats = document.getElementById('stats');
+            
+            if (jogosFiltrados.length === 0) {
+                grid.innerHTML = '<div class="loading-text">Nenhum jogo encontrado</div>';
+                stats.textContent = '';
+                return;
+            }
+            
+            stats.textContent = `${jogosFiltrados.length} de ${jogos.length} jogo(s)`;
+            
+            grid.innerHTML = jogosFiltrados.map(jogo => `
+                <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}')">
+                    <div class="game-icon">🕹️</div>
+                    <div class="game-title">${jogo.nome}</div>
+                    <div class="game-size">Clique para jogar</div>
+                </div>
+            `).join('');
+        }
+
+        function filtrarJogos() {
+            const busca = document.getElementById('search').value.toLowerCase();
+            if (busca.length === 0) {
+                jogosFiltrados = [...jogos];
+            } else {
+                jogosFiltrados = jogos.filter(j => 
+                    j.nome.toLowerCase().includes(busca) ||
+                    j.arquivo.toLowerCase().includes(busca)
+                );
+            }
+            renderizarJogos();
         }
 
         async function iniciarJogo(arquivo, nome) {
@@ -93,30 +333,64 @@
             const statusText = document.getElementById('statusText');
             
             loading.style.display = 'block';
-            statusText.textContent = 'Baixando...';
-            progressFill.style.width = '0%';
+            statusText.textContent = 'Conectando ao servidor...';
+            progressFill.style.width = '10%';
             
             try {
-                const url = ROMS_URL + encodeURIComponent(arquivo);
+                const url = ROMS_BASE + encodeURIComponent(arquivo);
+                
+                statusText.textContent = 'Baixando ROM...';
+                progressFill.style.width = '30%';
+                
                 const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP ${response.status}: Arquivo não encontrado`);
+                }
                 
-                if (!response.ok) throw new Error('Arquivo não encontrado');
-                
-                const blob = await response.blob();
+                const contentLength = response.headers.get('content-length');
+                const total = parseInt(contentLength, 10);
+                let loaded = 0;
+
+                const reader = response.body.getReader();
+                const stream = new ReadableStream({
+                    start(controller) {
+                        function push() {
+                            reader.read().then(({ done, value }) => {
+                                if (done) {
+                                    controller.close();
+                                    return;
+                                }
+                                loaded += value.length;
+                                if (total) {
+                                    const percent = 30 + Math.round((loaded / total) * 70);
+                                    progressFill.style.width = percent + '%';
+                                    statusText.textContent = `Baixando: ${percent}% (${(loaded/1024/1024).toFixed(1)}MB)`;
+                                }
+                                controller.enqueue(value);
+                                push();
+                            });
+                        }
+                        push();
+                    }
+                });
+
+                const blob = await new Response(stream).blob();
                 const blobUrl = URL.createObjectURL(blob);
                 
-                statusText.textContent = 'Iniciando...';
+                statusText.textContent = 'Iniciando emulador...';
                 progressFill.style.width = '100%';
                 
                 setTimeout(() => {
                     document.getElementById('game-container').style.display = 'block';
                     loading.style.display = 'none';
                     
+                    // Configurar EmulatorJS
                     window.EJS_player = "#game";
                     window.EJS_core = "mame2003";
                     window.EJS_gameName = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
                     window.EJS_color = "#000000";
                     window.EJS_startOnLoaded = true;
+                    window.EJS_fullscreenOnLoaded = false;
                     window.EJS_pathtodata = "https://sf2prime.github.io/data/";
                     window.EJS_gameUrl = blobUrl;
                     window.EJS_VirtualGamepadSettings = [
@@ -135,13 +409,19 @@
                 }, 500);
                 
             } catch (error) {
-                alert('Erro: ' + error.message);
+                alert(`❌ Erro ao carregar ${arquivo}:\n\n${error.message}\n\nVerifique se o arquivo existe na pasta roms.`);
                 loading.style.display = 'none';
             }
         }
 
-        function voltar() { location.reload(); }
-        carregarJogos();
+        function voltar() {
+            if (confirm('Deseja voltar para a biblioteca? O jogo atual será fechado.')) {
+                location.reload();
+            }
+        }
+
+        // Iniciar
+        varrerPastaRoms();
     </script>
 </body>
 </html>
