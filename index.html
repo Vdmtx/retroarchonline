@@ -7,97 +7,58 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            background: #0a0a0a;
             color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-        }
-        .header {
-            background: rgba(0,0,0,0.8);
+            font-family: Arial, sans-serif;
             padding: 20px;
-            text-align: center;
-            border-bottom: 3px solid #00ff88;
         }
-        .header h1 { color: #00ff88; font-size: 28px; }
-        .header p { color: #888; margin-top: 5px; font-size: 14px; }
+        h1 { color: #00ff88; text-align: center; margin-bottom: 30px; }
         
-        .info-box {
-            background: rgba(0,255,136,0.1);
+        .error-box {
+            background: #ff000033;
+            border: 2px solid #ff0000;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        .error-box h3 { color: #ff4444; margin-bottom: 10px; }
+        .error-box p { color: #ff8888; margin: 10px 0; }
+        
+        .success-box {
+            background: #00ff8833;
             border: 2px solid #00ff88;
+            padding: 20px;
             border-radius: 8px;
-            padding: 15px;
             margin: 20px auto;
-            max-width: 800px;
+            max-width: 600px;
         }
-        .info-box h3 { color: #00ff88; margin-bottom: 10px; }
-        .info-box ul { 
-            list-style: none; 
-            padding-left: 0;
-            color: #fff;
-            font-size: 14px;
-        }
-        .info-box li { padding: 5px 0; }
-        .info-box li::before { content: "✅ "; }
-        
-        .warning-box {
-            background: rgba(255,136,0,0.1);
-            border: 2px solid #ff8800;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px auto;
-            max-width: 800px;
-        }
-        .warning-box h3 { color: #ff8800; margin-bottom: 10px; }
-        .warning-box p { color: #ffcc88; font-size: 14px; }
-        
-        .search-box { max-width: 600px; margin: 20px auto; padding: 0 20px; }
-        .search-box input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #333;
-            border-radius: 25px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-        }
-        .search-box input:focus { border-color: #00ff88; }
+        .success-box h3 { color: #00ff88; margin-bottom: 10px; }
         
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1400px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         .game-card {
-            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            background: #1a1a2e;
             border: 2px solid #333;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 15px;
             cursor: pointer;
+            text-align: center;
             transition: all 0.3s;
         }
         .game-card:hover {
-            transform: translateY(-5px);
             border-color: #00ff88;
-            box-shadow: 0 10px 30px rgba(0,255,136,0.3);
+            background: #16213e;
+            transform: translateY(-3px);
         }
-        .game-icon {
-            width: 100%; height: 120px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        .game-title {
-            font-size: 14px; font-weight: bold;
-            text-align: center;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .game-size { font-size: 12px; color: #888; text-align: center; margin-top: 5px; }
+        .game-icon { font-size: 48px; margin-bottom: 10px; }
+        .game-title { font-weight: bold; margin-bottom: 5px; }
+        .game-size { color: #888; font-size: 12px; }
         
         #game-container {
             display: none;
@@ -112,11 +73,10 @@
             position: fixed;
             top: 10px; left: 10px;
             z-index: 1001;
-            background: rgba(0,0,0,0.8);
+            background: #000;
             color: #fff;
             border: 2px solid #00ff88;
             padding: 10px 20px;
-            border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
         }
@@ -125,22 +85,23 @@
         #loading {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.95);
+            padding: 30px;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
             z-index: 2000;
-            flex-direction: column;
-            justify-content: center; align-items: center;
+            text-align: center;
         }
         #loading h2 { color: #00ff88; margin-bottom: 20px; }
         .progress-bar {
-            width: 80%; max-width: 400px;
-            height: 30px;
+            width: 300px;
+            height: 20px;
             background: #1a1a2e;
-            border: 2px solid #00ff88;
-            border-radius: 5px;
+            border: 1px solid #00ff88;
+            border-radius: 4px;
             overflow: hidden;
-            position: relative;
         }
         .progress-fill {
             height: 100%;
@@ -148,63 +109,30 @@
             width: 0%;
             transition: width 0.3s;
         }
-        .progress-text {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-weight: bold; color: #000;
-        }
-        #status { margin-top: 15px; color: #888; }
+        #statusText { margin-top: 10px; color: #888; }
         
-        .error-message {
-            background: rgba(255,0,0,0.2);
-            border: 2px solid #ff0000;
-            color: #ff8888;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px;
+        .info-text {
             text-align: center;
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🎮 Minha Biblioteca Arcade</h1>
-        <p>Emulador: MAME2003 (mais compatível)</p>
-    </div>
-
-    <div class="info-box">
-        <h3>📋 Arquivos Detectados</h3>
-        <ul id="fileList">
-            <li>Carregando...</li>
-        </ul>
-    </div>
-
-    <div class="warning-box">
-        <h3>⚠️ Importante</h3>
-        <p>
-            <strong>Para jogos NeoGeo (KOF, Metal Slug):</strong><br>
-            É necessário o arquivo <code>neogeo.zip</code> (BIOS)<br><br>
-            <strong>ROMs recomendadas:</strong> Use ROMs "non-merged" ou "split" do MAME 0.78
-        </p>
-    </div>
-
-    <div class="search-box">
-        <input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()">
-    </div>
-
-    <div class="game-grid" id="gameGrid">
-        <div style="text-align: center; padding: 40px; color: #00ff88;">🔄 Escaneando...</div>
-    </div>
+    <h1>🎮 Minha Biblioteca Arcade</h1>
+    <p class="info-text">Clique em um jogo para jogar online • Sem download necessário</p>
+    
+    <div id="status"></div>
+    <div class="game-grid" id="gameGrid"></div>
 
     <div id="loading">
-        <h2>🎮 Carregando...</h2>
+        <h2>🎮 Carregando jogo...</h2>
         <div class="progress-bar">
             <div class="progress-fill" id="progressFill"></div>
-            <div class="progress-text" id="progressText">0%</div>
         </div>
-        <div id="status">Preparando...</div>
+        <p id="statusText">Preparando...</p>
     </div>
 
     <div id="game-container">
@@ -213,115 +141,91 @@
     </div>
 
     <script>
-        const REPO_OWNER = "Vdmtx";
-        const REPO_NAME = "retroarchonline";
-        const ROMS_PATH = "roms";
-        const BASE_URL = `https://${REPO_OWNER}.github.io/${REPO_NAME}/${ROMS_PATH}/`;
-        
+        const ROMS_URL = 'https://vdmtx.github.io/retroarchonline/roms/';
         let jogos = [];
-        let db;
 
-        async function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open('ArcadeCache', 1);
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => { db = request.result; resolve(db); };
-                request.onupgradeneeded = (e) => {
-                    const database = e.target.result;
-                    if (!database.objectStoreNames.contains('roms')) {
-                        database.createObjectStore('roms', { keyPath: 'id' });
-                    }
-                };
-            });
-        }
-
-        async function salvarCache(id, blob) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['roms'], 'readwrite');
-                tx.objectStore('roms').put({ id, blob, timestamp: Date.now() });
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => reject(tx.error);
-            });
-        }
-
-        async function buscarCache(id) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['roms'], 'readonly');
-                const req = tx.objectStore('roms').get(id);
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
-            });
-        }
-
-        async function listarJogos() {
+        async function carregarJogos() {
+            const grid = document.getElementById('gameGrid');
+            const status = document.getElementById('status');
+            
             try {
-                const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${ROMS_PATH}`;
-                const response = await fetch(apiUrl);
+                status.innerHTML = '<div style="text-align: center; color: #00ff88;">🔄 Carregando lista de jogos...</div>';
                 
-                if (!response.ok) throw new Error('Erro ao listar');
+                const response = await fetch(ROMS_URL);
+                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
                 
-                const files = await response.json();
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const links = doc.querySelectorAll('a');
                 
-                const lista = document.getElementById('fileList');
-                const grid = document.getElementById('gameGrid');
+                jogos = [];
+                links.forEach(link => {
+                    const nome = link.textContent.trim();
+                    if (nome.toLowerCase().endsWith('.zip')) {
+                        jogos.push({
+                            nome: nome.replace(/\.zip$/i, ''),
+                            arquivo: nome
+                        });
+                    }
+                });
                 
-                const zips = files.filter(f => f.name.toLowerCase().endsWith('.zip'));
+                if (jogos.length === 0) {
+                    status.innerHTML = `
+                        <div class="error-box">
+                            <h3>⚠️ Nenhum jogo encontrado</h3>
+                            <p>A pasta roms/ está vazia ou sem arquivos ZIP</p>
+                        </div>
+                    `;
+                    return;
+                }
                 
-                // Mostrar arquivos encontrados
-                lista.innerHTML = zips.map(f => 
-                    `<li>${f.name} (${(f.size/1024/1024).toFixed(2)} MB)</li>`
-                ).join('') || '<li>Nenhum arquivo ZIP encontrado</li>';
+                status.innerHTML = `
+                    <div class="success-box">
+                        <h3>✅ ${jogos.length} jogo(s) disponível(is)!</h3>
+                        <p>Clique em um jogo para começar</p>
+                    </div>
+                `;
                 
-                // Criar lista de jogos
-                jogos = zips.map(file => ({
-                    nome: file.name.replace(/\.zip$/i, '').replace(/[_-]/g, ' '),
-                    arquivo: file.name,
-                    sistema: 'mame2003', // Mudado para MAME2003
-                    tamanho: file.size
-                }));
+                grid.innerHTML = jogos.map(jogo => `
+                    <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}')">
+                        <div class="game-icon">🕹️</div>
+                        <div class="game-title">${jogo.nome}</div>
+                        <div class="game-size">Clique para jogar</div>
+                    </div>
+                `).join('');
                 
-                renderizarJogos();
             } catch (error) {
-                grid.innerHTML = `
-                    <div class="error-message" style="grid-column: 1/-1;">
-                        <h3>❌ Erro ao carregar</h3>
-                        <p>${error.message}</p>
-                        <p style="margin-top: 10px; font-size: 12px;">
-                            URL: ${BASE_URL}<br>
-                            Verifique se a pasta "roms" existe
+                status.innerHTML = `
+                    <div class="error-box">
+                        <h3> Erro ao carregar</h3>
+                        <p><strong>${error.message}</strong></p>
+                        <p style="font-size: 12px; margin-top: 10px;">
+                            URL: ${ROMS_URL}<br>
+                            Verifique: https://github.com/Vdmtx/retroarchonline/tree/main/roms
                         </p>
                     </div>
                 `;
             }
         }
 
-        async function baixarComProgresso(arquivo, jogoId) {
+        async function iniciarJogo(arquivo, nome) {
             const loading = document.getElementById('loading');
             const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            const status = document.getElementById('status');
+            const statusText = document.getElementById('statusText');
             
-            loading.style.display = 'flex';
-            status.textContent = 'Verificando cache...';
-
-            const cached = await buscarCache(jogoId);
-            if (cached) {
-                status.textContent = 'Carregando do cache...';
-                progressFill.style.width = '100%';
-                progressText.textContent = '100%';
-                await new Promise(r => setTimeout(r, 500));
-                loading.style.display = 'none';
-                return URL.createObjectURL(cached.blob);
-            }
-
-            status.textContent = 'Baixando ROM...';
-            const url = `${BASE_URL}${encodeURIComponent(arquivo)}`;
+            loading.style.display = 'block';
+            statusText.textContent = 'Conectando ao servidor...';
+            progressFill.style.width = '10%';
             
             try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: Arquivo não encontrado`);
-                }
+                const romUrl = ROMS_URL + encodeURIComponent(arquivo);
+                
+                statusText.textContent = 'Baixando ROM...';
+                progressFill.style.width = '30%';
+                
+                const response = await fetch(romUrl);
+                if (!response.ok) throw new Error(`Erro ao baixar: HTTP ${response.status}`);
                 
                 const contentLength = response.headers.get('content-length');
                 const total = parseInt(contentLength, 10);
@@ -332,13 +236,15 @@
                     start(controller) {
                         function push() {
                             reader.read().then(({ done, value }) => {
-                                if (done) { controller.close(); return; }
+                                if (done) {
+                                    controller.close();
+                                    return;
+                                }
                                 loaded += value.length;
                                 if (total) {
-                                    const percent = Math.round((loaded / total) * 100);
+                                    const percent = 30 + Math.round((loaded / total) * 70);
                                     progressFill.style.width = percent + '%';
-                                    progressText.textContent = percent + '%';
-                                    status.textContent = `Baixando: ${(loaded/1024/1024).toFixed(1)}MB / ${(total/1024/1024).toFixed(1)}MB`;
+                                    statusText.textContent = `Baixando: ${percent}%`;
                                 }
                                 controller.enqueue(value);
                                 push();
@@ -349,82 +255,51 @@
                 });
 
                 const blob = await new Response(stream).blob();
-                await salvarCache(jogoId, blob);
+                const blobUrl = URL.createObjectURL(blob);
                 
-                status.textContent = 'Pronto!';
+                statusText.textContent = 'Iniciando emulador...';
+                progressFill.style.width = '100%';
+                
                 await new Promise(r => setTimeout(r, 500));
+                
+                document.getElementById('game-container').style.display = 'block';
                 loading.style.display = 'none';
                 
-                return URL.createObjectURL(blob);
+                // Configurar EmulatorJS
+                window.EJS_player = "#game";
+                window.EJS_core = "mame2003";
+                window.EJS_gameName = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+                window.EJS_color = "#000000";
+                window.EJS_startOnLoaded = true;
+                window.EJS_fullscreenOnLoaded = false;
+                window.EJS_pathtodata = "https://sf2prime.github.io/data/";
+                window.EJS_gameUrl = blobUrl;
+                window.EJS_VirtualGamepadSettings = [
+                    {"type":"button","text":"A","id":"a","location":"right","right":145,"top":80,"bold":true,"input_value":0},
+                    {"type":"button","text":"B","id":"b","location":"right","right":75,"top":80,"bold":true,"input_value":8},
+                    {"type":"button","text":"X","id":"x","location":"right","right":145,"top":10,"bold":true,"input_value":1},
+                    {"type":"button","text":"Y","id":"y","location":"right","right":75,"top":10,"bold":true,"input_value":9},
+                    {"type":"dpad","location":"left","left":"50%","right":"50%","joystickInput":false,"inputValues":[4,5,6,7]},
+                    {"type":"button","text":"Coin","id":"select","location":"center","left":-5,"fontSize":15,"block":true,"input_value":2},
+                    {"type":"button","text":"Start","id":"start","location":"center","left":60,"fontSize":15,"block":true,"input_value":3}
+                ];
+                
+                // Carregar EmulatorJS
+                const script = document.createElement('script');
+                script.src = "https://sf2prime.github.io/data/loader.js";
+                document.body.appendChild(script);
+                
             } catch (error) {
-                alert(`❌ Erro:\n\n${error.message}\n\nURL: ${url}\n\nPossíveis causas:\n- GitHub ainda não atualizou\n- Arquivo >100MB (use Releases)\n- ROM incompatível`);
+                alert(`❌ Erro:\n\n${error.message}\n\nArquivo: ${arquivo}\n\nPossíveis causas:\n- ROM incompatível com MAME2003\n- Arquivo corrompido no GitHub\n- Faltam arquivos de BIOS`);
                 loading.style.display = 'none';
-                return null;
             }
-        }
-
-        function renderizarJogos(lista = jogos) {
-            const grid = document.getElementById('gameGrid');
-            grid.innerHTML = '';
-            
-            if (lista.length === 0) {
-                grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #888; grid-column: 1/-1;">Nenhum jogo encontrado</div>';
-                return;
-            }
-            
-            lista.forEach(jogo => {
-                const card = document.createElement('div');
-                card.className = 'game-card';
-                card.innerHTML = `
-                    <div class="game-icon">🕹️</div>
-                    <div class="game-title">${jogo.nome}</div>
-                    <div class="game-size">${jogo.sistema.toUpperCase()} • ${(jogo.tamanho/1024/1024).toFixed(1)}MB</div>
-                `;
-                card.onclick = () => carregarJogo(jogo);
-                grid.appendChild(card);
-            });
-        }
-
-        function filtrarJogos() {
-            const busca = document.getElementById('search').value.toLowerCase();
-            renderizarJogos(jogos.filter(j => j.nome.toLowerCase().includes(busca)));
-        }
-
-        async function carregarJogo(jogo) {
-            const blobUrl = await baixarComProgresso(jogo.arquivo, jogo.nome);
-            if (!blobUrl) return;
-
-            document.getElementById('game-container').style.display = 'block';
-            document.getElementById('back-btn').style.display = 'block';
-
-            EJS_player = "#game";
-            EJS_core = "mame2003"; // MAME2003 é mais compatível
-            EJS_gameName = jogo.nome.replace(/\s+/g, '').toLowerCase();
-            EJS_color = "#000000";
-            EJS_startOnLoaded = true;
-            EJS_fullscreenOnLoad = false;
-            EJS_pathtodata = "https://sf2prime.github.io/data/";
-            EJS_gameUrl = blobUrl;
-            EJS_VirtualGamepadSettings = [
-                {"type":"button","text":"A","id":"a","location":"right","right":145,"top":80,"bold":true,"input_value":0},
-                {"type":"button","text":"B","id":"b","location":"right","right":75,"top":80,"bold":true,"input_value":8},
-                {"type":"button","text":"X","id":"x","location":"right","right":145,"top":10,"bold":true,"input_value":1},
-                {"type":"button","text":"Y","id":"y","location":"right","right":75,"top":10,"bold":true,"input_value":9},
-                {"type":"dpad","location":"left","left":"50%","right":"50%","joystickInput":false,"inputValues":[4,5,6,7]},
-                {"type":"button","text":"Coin","id":"select","location":"center","left":-5,"fontSize":15,"block":true,"input_value":2},
-                {"type":"button","text":"Start","id":"start","location":"center","left":60,"fontSize":15,"block":true,"input_value":3}
-            ];
-
-            const script = document.createElement('script');
-            script.src = "https://sf2prime.github.io/data/loader.js";
-            document.body.appendChild(script);
         }
 
         function voltar() {
             location.reload();
         }
 
-        initDB().then(() => listarJogos());
+        carregarJogos();
     </script>
 </body>
 </html>
