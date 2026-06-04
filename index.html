@@ -6,142 +6,45 @@
     <title>🎮 Minha Biblioteca Arcade</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0a0a0a;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
+        body { background: #0a0a0a; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
         h1 { color: #00ff88; text-align: center; margin-bottom: 30px; }
-        
-        .error-box {
-            background: #ff000033;
-            border: 2px solid #ff0000;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px auto;
-            max-width: 600px;
-        }
+        .error-box { background: #ff000033; border: 2px solid #ff0000; padding: 20px; border-radius: 8px; margin: 20px auto; max-width: 600px; }
         .error-box h3 { color: #ff4444; margin-bottom: 10px; }
-        .error-box p { color: #ff8888; margin: 10px 0; }
-        
-        .success-box {
-            background: #00ff8833;
-            border: 2px solid #00ff88;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px auto;
-            max-width: 600px;
-        }
+        .success-box { background: #00ff8833; border: 2px solid #00ff88; padding: 20px; border-radius: 8px; margin: 20px auto; max-width: 600px; }
         .success-box h3 { color: #00ff88; margin-bottom: 10px; }
-        
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .game-card {
-            background: #1a1a2e;
-            border: 2px solid #333;
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        .game-card:hover {
-            border-color: #00ff88;
-            background: #16213e;
-            transform: translateY(-3px);
-        }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
+        .game-card { background: #1a1a2e; border: 2px solid #333; border-radius: 8px; padding: 15px; cursor: pointer; text-align: center; transition: all 0.3s; }
+        .game-card:hover { border-color: #00ff88; transform: translateY(-3px); }
         .game-icon { font-size: 48px; margin-bottom: 10px; }
         .game-title { font-weight: bold; margin-bottom: 5px; }
         .game-size { color: #888; font-size: 12px; }
-        
-        #game-container {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #000;
-            z-index: 1000;
-        }
+        #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
         #game { width: 100%; height: 100%; }
-        #back-btn {
-            position: fixed;
-            top: 10px; left: 10px;
-            z-index: 1001;
-            background: #000;
-            color: #fff;
-            border: 2px solid #00ff88;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        #back-btn:hover { background: #00ff88; color: #000; }
-        
-        #loading {
-            display: none;
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            padding: 30px;
-            border: 2px solid #00ff88;
-            border-radius: 8px;
-            z-index: 2000;
-            text-align: center;
-        }
+        #back-btn { position: fixed; top: 10px; left: 10px; z-index: 1001; background: #000; color: #fff; border: 2px solid #00ff88; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        #loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 30px; border: 2px solid #00ff88; border-radius: 8px; z-index: 2000; text-align: center; }
         #loading h2 { color: #00ff88; margin-bottom: 20px; }
-        .progress-bar {
-            width: 300px;
-            height: 20px;
-            background: #1a1a2e;
-            border: 1px solid #00ff88;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff88, #00cc6a);
-            width: 0%;
-            transition: width 0.3s;
-        }
+        .progress-bar { width: 300px; height: 20px; background: #1a1a2e; border: 1px solid #00ff88; }
+        .progress-fill { height: 100%; background: #00ff88; width: 0%; transition: width 0.3s; }
         #statusText { margin-top: 10px; color: #888; }
-        
-        .info-text {
-            text-align: center;
-            color: #888;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
     </style>
 </head>
 <body>
-
     <h1>🎮 Minha Biblioteca Arcade</h1>
-    <p class="info-text">Clique em um jogo para jogar online • Sem download necessário</p>
-    
     <div id="status"></div>
     <div class="game-grid" id="gameGrid"></div>
-
     <div id="loading">
-        <h2>🎮 Carregando jogo...</h2>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
+        <h2>🎮 Carregando...</h2>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
         <p id="statusText">Preparando...</p>
     </div>
-
     <div id="game-container">
         <button id="back-btn" onclick="voltar()">← Voltar</button>
         <div id="game"></div>
     </div>
 
     <script>
-        const ROMS_URL = 'https://vdmtx.github.io/retroarchonline/roms/';
+        const REPO = 'Vdmtx/retroarchonline';
+        const RELEASE_TAG = '1.0';
         let jogos = [];
 
         async function carregarJogos() {
@@ -149,84 +52,45 @@
             const status = document.getElementById('status');
             
             try {
-                status.innerHTML = '<div style="text-align: center; color: #00ff88;">🔄 Carregando lista de jogos...</div>';
+                status.innerHTML = '<div style="text-align:center;color:#00ff88;grid-column:1/-1;">🔄 Carregando...</div>';
+                const response = await fetch(`https://api.github.com/repos/${REPO}/releases/tags/${RELEASE_TAG}`);
+                if (!response.ok) throw new Error('Release não encontrado');
+                const release = await response.json();
+                const assets = release.assets || [];
+                if (assets.length === 0) throw new Error('Nenhum arquivo no release');
                 
-                const response = await fetch(ROMS_URL);
-                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+                jogos = assets.filter(asset => asset.name.toLowerCase().endsWith('.zip')).map(asset => ({
+                    nome: asset.name.replace(/\.zip$/i, '').replace(/[_-]/g, ' '),
+                    arquivo: asset.name,
+                    url: asset.browser_download_url,
+                    tamanho: asset.size
+                }));
                 
-                const html = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const links = doc.querySelectorAll('a');
-                
-                jogos = [];
-                links.forEach(link => {
-                    const nome = link.textContent.trim();
-                    if (nome.toLowerCase().endsWith('.zip')) {
-                        jogos.push({
-                            nome: nome.replace(/\.zip$/i, ''),
-                            arquivo: nome
-                        });
-                    }
-                });
-                
-                if (jogos.length === 0) {
-                    status.innerHTML = `
-                        <div class="error-box">
-                            <h3>⚠️ Nenhum jogo encontrado</h3>
-                            <p>A pasta roms/ está vazia ou sem arquivos ZIP</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                status.innerHTML = `
-                    <div class="success-box">
-                        <h3>✅ ${jogos.length} jogo(s) disponível(is)!</h3>
-                        <p>Clique em um jogo para começar</p>
-                    </div>
-                `;
-                
+                status.innerHTML = `<div class="success-box"><h3>✅ ${jogos.length} jogo(s) disponível(is)!</h3><p>Clique para jogar online</p></div>`;
                 grid.innerHTML = jogos.map(jogo => `
-                    <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}')">
+                    <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.url}', '${jogo.nome}')">
                         <div class="game-icon">🕹️</div>
                         <div class="game-title">${jogo.nome}</div>
-                        <div class="game-size">Clique para jogar</div>
+                        <div class="game-size">${(jogo.tamanho/1024/1024).toFixed(1)} MB</div>
                     </div>
                 `).join('');
-                
             } catch (error) {
-                status.innerHTML = `
-                    <div class="error-box">
-                        <h3> Erro ao carregar</h3>
-                        <p><strong>${error.message}</strong></p>
-                        <p style="font-size: 12px; margin-top: 10px;">
-                            URL: ${ROMS_URL}<br>
-                            Verifique: https://github.com/Vdmtx/retroarchonline/tree/main/roms
-                        </p>
-                    </div>
-                `;
+                status.innerHTML = `<div class="error-box"><h3>❌ Erro</h3><p>${error.message}</p></div>`;
             }
         }
 
-        async function iniciarJogo(arquivo, nome) {
+        async function iniciarJogo(arquivo, url, nome) {
             const loading = document.getElementById('loading');
             const progressFill = document.getElementById('progressFill');
             const statusText = document.getElementById('statusText');
             
             loading.style.display = 'block';
-            statusText.textContent = 'Conectando ao servidor...';
-            progressFill.style.width = '10%';
+            statusText.textContent = 'Baixando ROM...';
+            progressFill.style.width = '0%';
             
             try {
-                const romUrl = ROMS_URL + encodeURIComponent(arquivo);
-                
-                statusText.textContent = 'Baixando ROM...';
-                progressFill.style.width = '30%';
-                
-                const response = await fetch(romUrl);
-                if (!response.ok) throw new Error(`Erro ao baixar: HTTP ${response.status}`);
-                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Erro ao baixar');
                 const contentLength = response.headers.get('content-length');
                 const total = parseInt(contentLength, 10);
                 let loaded = 0;
@@ -236,13 +100,10 @@
                     start(controller) {
                         function push() {
                             reader.read().then(({ done, value }) => {
-                                if (done) {
-                                    controller.close();
-                                    return;
-                                }
+                                if (done) { controller.close(); return; }
                                 loaded += value.length;
                                 if (total) {
-                                    const percent = 30 + Math.round((loaded / total) * 70);
+                                    const percent = Math.round((loaded / total) * 100);
                                     progressFill.style.width = percent + '%';
                                     statusText.textContent = `Baixando: ${percent}%`;
                                 }
@@ -256,22 +117,17 @@
 
                 const blob = await new Response(stream).blob();
                 const blobUrl = URL.createObjectURL(blob);
-                
                 statusText.textContent = 'Iniciando emulador...';
-                progressFill.style.width = '100%';
-                
                 await new Promise(r => setTimeout(r, 500));
                 
                 document.getElementById('game-container').style.display = 'block';
                 loading.style.display = 'none';
                 
-                // Configurar EmulatorJS
                 window.EJS_player = "#game";
                 window.EJS_core = "mame2003";
                 window.EJS_gameName = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
                 window.EJS_color = "#000000";
                 window.EJS_startOnLoaded = true;
-                window.EJS_fullscreenOnLoaded = false;
                 window.EJS_pathtodata = "https://sf2prime.github.io/data/";
                 window.EJS_gameUrl = blobUrl;
                 window.EJS_VirtualGamepadSettings = [
@@ -284,21 +140,16 @@
                     {"type":"button","text":"Start","id":"start","location":"center","left":60,"fontSize":15,"block":true,"input_value":3}
                 ];
                 
-                // Carregar EmulatorJS
                 const script = document.createElement('script');
                 script.src = "https://sf2prime.github.io/data/loader.js";
                 document.body.appendChild(script);
-                
             } catch (error) {
-                alert(`❌ Erro:\n\n${error.message}\n\nArquivo: ${arquivo}\n\nPossíveis causas:\n- ROM incompatível com MAME2003\n- Arquivo corrompido no GitHub\n- Faltam arquivos de BIOS`);
+                alert(`Erro: ${error.message}`);
                 loading.style.display = 'none';
             }
         }
 
-        function voltar() {
-            location.reload();
-        }
-
+        function voltar() { location.reload(); }
         carregarJogos();
     </script>
 </body>
