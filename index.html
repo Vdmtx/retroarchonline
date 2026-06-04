@@ -139,6 +139,7 @@
         }
         #status { margin-top: 15px; color: #888; }
         .stats { text-align: center; padding: 10px; color: #888; font-size: 14px; }
+        .loading-text { text-align: center; padding: 40px; color: #00ff88; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -153,7 +154,9 @@
     </div>
 
     <div class="stats" id="stats"></div>
-    <div class="game-grid" id="gameGrid"></div>
+    <div class="game-grid" id="gameGrid">
+        <div class="loading-text">🔄 Carregando lista de jogos...</div>
+    </div>
 
     <div id="loading">
         <h2>🎮 Carregando...</h2>
@@ -170,59 +173,18 @@
     </div>
 
     <script>
-        // URL DO RELEASE NO GITHUB - MUDE PARA SEU USUÁRIO
-        const ROMS_URL = "https://github.com/Vdmtx/retroarchonline/releases/download/v1.0/";
+        // CONFIGURAÇÕES
+        const REPO_OWNER = "Vdmtx";
+        const REPO_NAME = "retroarchonline";
+        const ROMS_PATH = "roms";
+        const BASE_URL = `https://${REPO_OWNER}.github.io/${REPO_NAME}/${ROMS_PATH}/`;
         
-        const jogos = [
-            { nome: "Sonic Megamix", arquivo: "Sonic Megamix.zip", sistema: "fbneo" },
-            { nome: "SVC Chaos", arquivo: "svc.zip", sistema: "fbneo" },
-            { nome: "Samurai Shodown V", arquivo: "samsho5.zip", sistema: "fbneo" },
-            { nome: "Samurai Shodown V Special", arquivo: "samsho5sp.zip", sistema: "fbneo" },
-            { nome: "Matrimelee", arquivo: "matrim.zip", sistema: "fbneo" },
-            { nome: "Garou: Mark of the Wolves", arquivo: "garou.zip", sistema: "fbneo" },
-            { nome: "King of Fighters '99", arquivo: "kof99.zip", sistema: "fbneo" },
-            { nome: "Street Fighter III 3rd Strike", arquivo: "sfiii3.zip", sistema: "fbneo" },
-            { nome: "KOF 98AE 2016", arquivo: "kof98ae2016.zip", sistema: "fbneo" },
-            { nome: "KOF 98AE", arquivo: "kof98ae.zip", sistema: "fbneo" },
-            { nome: "Street Fighter III 2nd Impact", arquivo: "sfiii2.zip", sistema: "fbneo" },
-            { nome: "KOF 98 Mix", arquivo: "kof98mix.zip", sistema: "fbneo" },
-            { nome: "KOF 98 EC 2.0", arquivo: "kof98eck20.zip", sistema: "fbneo" },
-            { nome: "Samurai Shodown FE", arquivo: "samsho5fe.zip", sistema: "fbneo" },
-            { nome: "KOF 98-1", arquivo: "kof98-1.zip", sistema: "fbneo" },
-            { nome: "KOF 98", arquivo: "kof98.zip", sistema: "fbneo" },
-            { nome: "KOF 98K", arquivo: "kof98k.zip", sistema: "fbneo" },
-            { nome: "KOF 98CB", arquivo: "kof98cb.zip", sistema: "fbneo" },
-            { nome: "KOF 98 PFE", arquivo: "kof98pfe.zip", sistema: "fbneo" },
-            { nome: "KOF 97", arquivo: "kof97.zip", sistema: "fbneo" },
-            { nome: "KOF 96", arquivo: "kof96.zip", sistema: "fbneo" },
-            { nome: "Street Fighter Alpha 3", arquivo: "sfa3.zip", sistema: "fbneo" },
-            { nome: "Ultimate Mortal Kombat 3", arquivo: "umk3.zip", sistema: "fbneo" },
-            { nome: "Ragnagard", arquivo: "ragnagrd.zip", sistema: "fbneo" },
-            { nome: "Samurai Shodown 4", arquivo: "samsho4.zip", sistema: "fbneo" },
-            { nome: "Hyper Street Fighter 2", arquivo: "hsf2.zip", sistema: "fbneo" },
-            { nome: "Mortal Kombat 3", arquivo: "mk3k.zip", sistema: "fbneo" },
-            { nome: "Art of Fighting 3", arquivo: "aof3.zip", sistema: "fbneo" },
-            { nome: "Samurai Shodown 3", arquivo: "samsho3.zip", sistema: "fbneo" },
-            { nome: "KOF 95", arquivo: "kof95.zip", sistema: "fbneo" },
-            { nome: "Art of Fighting 2", arquivo: "aof2a.zip", sistema: "fbneo" },
-            { nome: "Street Fighter Zero 2 Alpha", arquivo: "sfz2al.zip", sistema: "fbneo" },
-            { nome: "Mortal Kombat 2", arquivo: "mk2.zip", sistema: "fbneo" },
-            { nome: "Savage Reign", arquivo: "savagere.zip", sistema: "fbneo" },
-            { nome: "KOF 94", arquivo: "kof94.zip", sistema: "fbneo" },
-            { nome: "Fatal Fury Special", arquivo: "fatfursp.zip", sistema: "fbneo" },
-            { nome: "Real Bout Fatal Fury", arquivo: "rbff1.zip", sistema: "fbneo" },
-            { nome: "Real Bout Fatal Fury Special", arquivo: "rbffspec.zip", sistema: "fbneo" },
-            { nome: "Last Blade 2", arquivo: "lastbld2.zip", sistema: "fbneo" },
-            { nome: "Last Blade", arquivo: "lastblad.zip", sistema: "fbneo" },
-            { nome: "Breakers Revenge", arquivo: "breakrev.zip", sistema: "fbneo" },
-            { nome: "Street Fighter Alpha", arquivo: "sfa.zip", sistema: "fbneo" },
-            { nome: "Mortal Kombat", arquivo: "mk.zip", sistema: "fbneo" }
-        ];
-
+        let jogos = [];
         let db;
         const DB_NAME = 'ArcadeCache';
         const STORE_NAME = 'roms';
 
+        // IndexedDB
         async function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, 1);
@@ -257,6 +219,38 @@
             });
         }
 
+        // Listar arquivos via GitHub API
+        async function listarJogos() {
+            try {
+                const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${ROMS_PATH}`;
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) throw new Error('Erro ao listar arquivos');
+                
+                const files = await response.json();
+                
+                jogos = files
+                    .filter(file => file.name.toLowerCase().endsWith('.zip'))
+                    .map(file => ({
+                        nome: file.name.replace(/\.zip$/i, '').replace(/[_-]/g, ' '),
+                        arquivo: file.name,
+                        sistema: 'fbneo',
+                        tamanho: file.size
+                    }));
+                
+                renderizarJogos();
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('gameGrid').innerHTML = 
+                    `<div class="loading-text" style="color: #ff4444;">
+                        ❌ Erro ao carregar jogos<br>
+                        <small>${error.message}</small><br><br>
+                        Verifique se a pasta "roms" existe no repositório
+                    </div>`;
+            }
+        }
+
+        // Download com progresso
         async function baixarComProgresso(arquivo, jogoId) {
             const loading = document.getElementById('loading');
             const progressFill = document.getElementById('progressFill');
@@ -277,7 +271,7 @@
             }
 
             status.textContent = 'Baixando ROM...';
-            const url = `${ROMS_URL}${encodeURIComponent(arquivo)}`;
+            const url = `${BASE_URL}${encodeURIComponent(arquivo)}`;
             
             try {
                 const response = await fetch(url);
@@ -323,10 +317,16 @@
             }
         }
 
+        // Renderizar jogos
         async function renderizarJogos(lista = jogos) {
             const grid = document.getElementById('gameGrid');
             const stats = document.getElementById('stats');
             grid.innerHTML = '';
+            
+            if (lista.length === 0) {
+                grid.innerHTML = '<div class="loading-text">Nenhum jogo encontrado</div>';
+                return;
+            }
             
             let cachedCount = 0;
             
@@ -339,7 +339,7 @@
                 card.innerHTML = `
                     <div class="game-icon">🕹️</div>
                     <div class="game-title">${jogo.nome}</div>
-                    <div class="game-size">${jogo.sistema.toUpperCase()}</div>
+                    <div class="game-size">${jogo.sistema.toUpperCase()} • ${(jogo.tamanho/1024/1024).toFixed(1)}MB</div>
                 `;
                 card.onclick = () => carregarJogo(jogo);
                 grid.appendChild(card);
@@ -348,12 +348,14 @@
             stats.textContent = `${lista.length} jogos • ${cachedCount} em cache`;
         }
 
+        // Filtrar jogos
         function filtrarJogos() {
             const busca = document.getElementById('search').value.toLowerCase();
             const filtrados = jogos.filter(j => j.nome.toLowerCase().includes(busca));
             renderizarJogos(filtrados);
         }
 
+        // Carregar jogo
         async function carregarJogo(jogo) {
             const blobUrl = await baixarComProgresso(jogo.arquivo, jogo.nome);
             if (!blobUrl) return;
@@ -391,8 +393,9 @@
             location.reload();
         }
 
+        // Inicializar
         initDB().then(() => {
-            renderizarJogos();
+            listarJogos();
         });
     </script>
 </body>
