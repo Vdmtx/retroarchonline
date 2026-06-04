@@ -68,7 +68,7 @@
                 
                 status.innerHTML = `<div class="success-box"><h3>✅ ${jogos.length} jogo(s) disponível(is)!</h3><p>Clique para jogar online</p></div>`;
                 grid.innerHTML = jogos.map(jogo => `
-                    <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.url}', '${jogo.nome}')">
+                    <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}')">
                         <div class="game-icon">🕹️</div>
                         <div class="game-title">${jogo.nome}</div>
                         <div class="game-size">${(jogo.tamanho/1024/1024).toFixed(1)} MB</div>
@@ -79,18 +79,53 @@
             }
         }
 
-        async function iniciarJogo(arquivo, url, nome) {
+        async function iniciarJogo(arquivo, nome) {
             const loading = document.getElementById('loading');
             const progressFill = document.getElementById('progressFill');
             const statusText = document.getElementById('statusText');
             
             loading.style.display = 'block';
-            statusText.textContent = 'Baixando ROM...';
-            progressFill.style.width = '0%';
+            statusText.textContent = 'Conectando...';
+            progressFill.style.width = '10%';
             
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Erro ao baixar');
+                // Usa jsDelivr (CDN) para evitar CORS
+                const jsdelivrUrl = `https://cdn.jsdelivr.net/gh/${REPO.replace('/', '/')}@${RELEASE_TAG}/${encodeURIComponent(arquivo)}`;
+                
+                // Tenta jsDelivr primeiro, senão usa GitHub direto com proxy
+                let url = jsdelivrUrl;
+                let useProxy = false;
+                
+                try {
+                    const testResponse = await fetch(jsdelivrUrl, { method: 'HEAD' });
+                    if (!testResponse.ok) {
+                        useProxy = true;
+                    }
+                } catch (e) {
+                    useProxy = true;
+                }
+                
+                if (useProxy) {
+                    // Fallback: GitHub Releases direto
+                    url = `https://github.com/${REPO}/releases/download/${RELEASE_TAG}/${encodeURIComponent(arquivo)}`;
+                }
+                
+                statusText.textContent = 'Baixando ROM...';
+                progressFill.style.width = '30%';
+                
+                // Tenta fetch normal primeiro
+                let response;
+                try {
+                    response = await fetch(url);
+                } catch (fetchError) {
+                    // Se falhar, tenta com proxy
+                    statusText.textContent = 'Usando proxy...';
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                    response = await fetch(proxyUrl + encodeURIComponent(url));
+                }
+                
+                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+                
                 const contentLength = response.headers.get('content-length');
                 const total = parseInt(contentLength, 10);
                 let loaded = 0;
@@ -103,7 +138,7 @@
                                 if (done) { controller.close(); return; }
                                 loaded += value.length;
                                 if (total) {
-                                    const percent = Math.round((loaded / total) * 100);
+                                    const percent = 30 + Math.round((loaded / total) * 70);
                                     progressFill.style.width = percent + '%';
                                     statusText.textContent = `Baixando: ${percent}%`;
                                 }
@@ -117,7 +152,9 @@
 
                 const blob = await new Response(stream).blob();
                 const blobUrl = URL.createObjectURL(blob);
+                
                 statusText.textContent = 'Iniciando emulador...';
+                progressFill.style.width = '100%';
                 await new Promise(r => setTimeout(r, 500));
                 
                 document.getElementById('game-container').style.display = 'block';
@@ -143,8 +180,9 @@
                 const script = document.createElement('script');
                 script.src = "https://sf2prime.github.io/data/loader.js";
                 document.body.appendChild(script);
+                
             } catch (error) {
-                alert(`Erro: ${error.message}`);
+                alert(`Erro ao carregar jogo:\n\n${error.message}\n\nTente outro jogo ou verifique sua conexão.`);
                 loading.style.display = 'none';
             }
         }
