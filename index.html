@@ -32,7 +32,7 @@
 </head>
 <body>
     <h1>🎮 Minha Biblioteca Arcade</h1>
-    <p class="subtitle">Core: FBNeo • Clique em um jogo para jogar online</p>
+    <p class="subtitle">EmulatorJS Oficial • Core: FBNeo</p>
     <div class="search-box">
         <input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()">
     </div>
@@ -82,7 +82,7 @@
             const stats = document.getElementById('stats');
             if (jogosFiltrados.length === 0) { grid.innerHTML = '<div style="text-align:center;padding:40px;color:#888;grid-column:1/-1;">Nenhum jogo</div>'; stats.textContent = ''; return; }
             stats.textContent = `${jogosFiltrados.length} de ${jogos.length} jogo(s)`;
-            grid.innerHTML = jogosFiltrados.map(jogo => `<div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}', '${jogo.url}')"><div class="game-icon">️</div><div class="game-title">${jogo.nome}</div><div class="game-size">${(jogo.tamanho/1024/1024).toFixed(1)} MB</div></div>`).join('');
+            grid.innerHTML = jogosFiltrados.map(jogo => `<div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}', '${jogo.url}')"><div class="game-icon">🕹️</div><div class="game-title">${jogo.nome}</div><div class="game-size">${(jogo.tamanho/1024/1024).toFixed(1)} MB</div></div>`).join('');
         }
 
         function filtrarJogos() {
@@ -97,18 +97,18 @@
             const statusText = document.getElementById('statusText');
             
             loading.style.display = 'block';
-            statusText.textContent = 'Carregando núcleo FBNeo...';
-            progressFill.style.width = '30%';
+            statusText.textContent = 'Carregando EmulatorJS...';
+            progressFill.style.width = '20%';
             
-            // Configurar ANTES de mostrar o container
+            // Configurar EmulatorJS Oficial
             window.EJS_player = "#game";
             window.EJS_core = "fbneo";
             window.EJS_gameUrl = romUrl;
-            window.EJS_gameName = arquivo.replace(/\.zip$/i, '').toLowerCase();
+            window.EJS_gameName = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             window.EJS_color = "#000000";
             window.EJS_startOnLoaded = true;
             window.EJS_fullscreenOnLoaded = false;
-            window.EJS_pathtodata = "https://sf2prime.github.io/data/";
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
             window.EJS_VirtualGamepadSettings = [
                 {"type":"button","text":"A","id":"a","location":"right","right":145,"top":80,"bold":true,"input_value":0},
                 {"type":"button","text":"B","id":"b","location":"right","right":75,"top":80,"bold":true,"input_value":8},
@@ -121,21 +121,20 @@
                 {"type":"button","text":"Start","id":"start","location":"center","left":60,"fontSize":15,"block":true,"input_value":3}
             ];
             
-            // Mostrar container
             document.getElementById('game-container').style.display = 'block';
-            progressFill.style.width = '60%';
-            statusText.textContent = 'Iniciando emulador...';
+            progressFill.style.width = '50%';
+            statusText.textContent = 'Iniciando...';
             
-            // Carregar script
+            // Carregar EmulatorJS Oficial
             const script = document.createElement('script');
-            script.src = "https://sf2prime.github.io/data/loader.js";
+            script.src = "https://cdn.emulatorjs.org/latest/data/emulator.js";
             script.onload = function() {
                 progressFill.style.width = '100%';
-                statusText.textContent = 'Jogo carregado!';
+                statusText.textContent = 'Jogo iniciado!';
                 setTimeout(() => { loading.style.display = 'none'; }, 1000);
             };
             script.onerror = function() {
-                alert('Erro ao carregar emulador');
+                alert('Erro ao carregar EmulatorJS');
                 loading.style.display = 'none';
             };
             document.body.appendChild(script);
