@@ -1,3 +1,6 @@
+// Vou criar um código baseado na estrutura EXATA do sf2prime
+// Analisando: https://sf2prime.github.io/sf2prime.html
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -32,13 +35,13 @@
 </head>
 <body>
     <h1>🎮 Minha Biblioteca Arcade</h1>
-    <p class="subtitle">EmulatorJS Oficial • Core: FBNeo</p>
+    <p class="subtitle">Baseado no sf2prime</p>
     <div class="search-box">
         <input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()">
     </div>
     <div class="stats" id="stats"></div>
     <div class="game-grid" id="gameGrid">
-        <div style="text-align:center;padding:40px;color:#00ff88;grid-column:1/-1;">🔄 Carregando jogos...</div>
+        <div style="text-align:center;padding:40px;color:#00ff88;grid-column:1/-1;">🔄 Carregando...</div>
     </div>
     <div id="loading">
         <h2>🎮 Carregando...</h2>
@@ -51,38 +54,60 @@
     </div>
 
     <script>
-        const REPO = 'Vdmtx/retroarchonline';
-        const ROMS_PATH = 'roms';
-        const ROMS_URL = `https://vdmtx.github.io/retroarchonline/roms/`;
+        // Estrutura igual ao sf2prime
+        const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/';
         let jogos = [];
         let jogosFiltrados = [];
 
+        // Varre igual ao sf2prime
         async function varrerPastaRoms() {
             try {
-                const apiUrl = `https://api.github.com/repos/${REPO}/contents/${ROMS_PATH}`;
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('Erro ao acessar');
-                const files = await response.json();
-                jogos = files.filter(file => file.name.toLowerCase().endsWith('.zip')).map(file => ({
-                    nome: file.name.replace(/\.zip$/i, '').replace(/[_-]/g, ' '),
-                    arquivo: file.name,
-                    url: `${ROMS_URL}${encodeURIComponent(file.name)}`,
-                    tamanho: file.size
-                }));
+                const response = await fetch(ROMS_BASE);
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const links = doc.querySelectorAll('a');
+                
+                jogos = Array.from(links)
+                    .map(link => {
+                        const nome = link.textContent.trim();
+                        return nome.endsWith('.zip') ? {
+                            nome: nome.replace(/\.zip$/, '').replace(/[_-]/g, ' '),
+                            arquivo: nome
+                        } : null;
+                    })
+                    .filter(j => j !== null);
+                
                 if (jogos.length === 0) throw new Error('Nenhum ZIP encontrado');
                 jogosFiltrados = [...jogos];
                 renderizarJogos();
             } catch (error) {
-                document.getElementById('gameGrid').innerHTML = `<div style="background:#f0000022;border:2px solid #f00;padding:30px;border-radius:8px;text-align:center;grid-column:1/-1;color:#f88;"><h3>❌ Erro</h3><p>${error.message}</p></div>`;
+                document.getElementById('gameGrid').innerHTML = `
+                    <div style="background:#f0000022;border:2px solid #f00;padding:30px;border-radius:8px;text-align:center;grid-column:1/-1;color:#f88;">
+                        <h3>❌ Erro</h3>
+                        <p>${error.message}</p>
+                        <p style="font-size:12px;margin-top:10px;">Tente acessar: ${ROMS_BASE}</p>
+                    </div>
+                `;
             }
         }
 
         function renderizarJogos() {
             const grid = document.getElementById('gameGrid');
             const stats = document.getElementById('stats');
-            if (jogosFiltrados.length === 0) { grid.innerHTML = '<div style="text-align:center;padding:40px;color:#888;grid-column:1/-1;">Nenhum jogo</div>'; stats.textContent = ''; return; }
+            if (jogosFiltrados.length === 0) { 
+                grid.innerHTML = '<div style="text-align:center;padding:40px;color:#888;grid-column:1/-1;">Nenhum jogo</div>'; 
+                stats.textContent = ''; 
+                return; 
+            }
             stats.textContent = `${jogosFiltrados.length} de ${jogos.length} jogo(s)`;
-            grid.innerHTML = jogosFiltrados.map(jogo => `<div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}', '${jogo.url}')"><div class="game-icon">🕹️</div><div class="game-title">${jogo.nome}</div><div class="game-size">${(jogo.tamanho/1024/1024).toFixed(1)} MB</div></div>`).join('');
+            grid.innerHTML = jogosFiltrados.map(jogo => `
+                <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}')">
+                    <div class="game-icon">🕹️</div>
+                    <div class="game-title">${jogo.nome}</div>
+                    <div class="game-size">Clique para jogar</div>
+                </div>
+            `).join('');
         }
 
         function filtrarJogos() {
@@ -91,50 +116,52 @@
             renderizarJogos();
         }
 
-        function iniciarJogo(arquivo, nome, romUrl) {
+        function iniciarJogo(arquivo, nome) {
             const loading = document.getElementById('loading');
             const progressFill = document.getElementById('progressFill');
             const statusText = document.getElementById('statusText');
             
             loading.style.display = 'block';
-            statusText.textContent = 'Carregando EmulatorJS...';
-            progressFill.style.width = '20%';
+            progressFill.style.width = '30%';
+            statusText.textContent = 'Preparando...';
             
-            // Configurar EmulatorJS Oficial
+            // Configuração EXATA como sf2prime
             window.EJS_player = "#game";
             window.EJS_core = "fbneo";
-            window.EJS_gameUrl = romUrl;
+            window.EJS_gameUrl = ROMS_BASE + arquivo;
             window.EJS_gameName = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             window.EJS_color = "#000000";
             window.EJS_startOnLoaded = true;
             window.EJS_fullscreenOnLoaded = false;
-            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
+            window.EJS_pathtodata = "https://sf2prime.github.io/data/";
+            
+            // Mesmos controles do sf2prime
             window.EJS_VirtualGamepadSettings = [
-                {"type":"button","text":"A","id":"a","location":"right","right":145,"top":80,"bold":true,"input_value":0},
-                {"type":"button","text":"B","id":"b","location":"right","right":75,"top":80,"bold":true,"input_value":8},
-                {"type":"button","text":"C","id":"c","location":"right","right":5,"top":80,"bold":true,"input_value":11},
-                {"type":"button","text":"X","id":"x","location":"right","right":145,"top":10,"bold":true,"input_value":1},
-                {"type":"button","text":"Y","id":"y","location":"right","right":75,"top":10,"bold":true,"input_value":9},
-                {"type":"button","text":"Z","id":"z","location":"right","right":5,"top":10,"bold":true,"input_value":10},
+                {"type":"button","text":"4","id":"a","location":"right","right":145,"top":80,"bold":true,"input_value":0},
+                {"type":"button","text":"5","id":"b","location":"right","right":75,"top":80,"bold":true,"input_value":8},
+                {"type":"button","text":"6","id":"c","location":"right","right":5,"top":80,"bold":true,"input_value":11},
+                {"type":"button","text":"1","id":"x","location":"right","right":145,"top":10,"bold":true,"input_value":1},
+                {"type":"button","text":"2","id":"y","location":"right","right":75,"top":10,"bold":true,"input_value":9},
+                {"type":"button","text":"3","id":"z","location":"right","right":5,"top":10,"bold":true,"input_value":10},
                 {"type":"dpad","location":"left","left":"50%","right":"50%","joystickInput":false,"inputValues":[4,5,6,7]},
                 {"type":"button","text":"Coin","id":"select","location":"center","left":-5,"fontSize":15,"block":true,"input_value":2},
                 {"type":"button","text":"Start","id":"start","location":"center","left":60,"fontSize":15,"block":true,"input_value":3}
             ];
             
             document.getElementById('game-container').style.display = 'block';
-            progressFill.style.width = '50%';
-            statusText.textContent = 'Iniciando...';
+            progressFill.style.width = '60%';
+            statusText.textContent = 'Carregando emulador...';
             
-            // Carregar EmulatorJS Oficial
+            // Carregar MESMO script do sf2prime
             const script = document.createElement('script');
-            script.src = "https://cdn.emulatorjs.org/latest/data/emulator.js";
+            script.src = "https://sf2prime.github.io/data/loader.js";
             script.onload = function() {
                 progressFill.style.width = '100%';
-                statusText.textContent = 'Jogo iniciado!';
+                statusText.textContent = 'Iniciando...';
                 setTimeout(() => { loading.style.display = 'none'; }, 1000);
             };
             script.onerror = function() {
-                alert('Erro ao carregar EmulatorJS');
+                alert('Erro ao carregar emulador');
                 loading.style.display = 'none';
             };
             document.body.appendChild(script);
