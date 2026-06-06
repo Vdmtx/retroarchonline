@@ -17,57 +17,10 @@
         .game-icon { font-size: 56px; margin-bottom: 15px; }
         #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
         #game { width: 100%; height: 100%; }
-        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: #000; color: #fff; border: 2px solid #00ff88; padding: 12px 24px; cursor: pointer; font-weight: bold; z-index: 1002; }
+        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: #000; color: #fff; border: 2px solid #00ff88; padding: 12px 24px; cursor: pointer; font-weight: bold; }
         #back-btn:hover { background: #00ff88; color: #000; }
-        
-        /* Botão para fechar loading manualmente */
-        #close-loading {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1002;
-            background: #ff0000;
-            color: #fff;
-            border: 2px solid #ff0000;
-            padding: 12px 24px;
-            cursor: pointer;
-            font-weight: bold;
-            display: none;
-        }
+        #close-loading { position: fixed; top: 15px; right: 15px; z-index: 1002; background: #ff0000; color: #fff; border: 2px solid #ff0000; padding: 12px 24px; cursor: pointer; font-weight: bold; display: none; }
         #close-loading:hover { background: #ff4444; }
-        
-        /* Tela de loading */
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-        #loading-screen.active { display: flex; }
-        .loading-box {
-            background: #000;
-            border: 2px solid #00ff88;
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        .loading-box h2 { color: #00ff88; margin-bottom: 20px; }
-        .loading-box button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #ff0000;
-            color: #fff;
-            border: 2px solid #ff0000;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .loading-box button:hover { background: #ff4444; }
     </style>
 </head>
 <body>
@@ -77,26 +30,40 @@
     </div>
     <div class="stats" id="stats"></div>
     <div class="game-grid" id="gameGrid"></div>
-    
-    <!-- Tela de loading com botão para fechar -->
-    <div id="loading-screen">
-        <div class="loading-box">
-            <h2>🎮 Carregando...</h2>
-            <p>Aguarde o jogo carregar</p>
-            <button onclick="fecharLoading()">✖ Fechar (se travar)</button>
-        </div>
-    </div>
-    
     <div id="game-container">
         <button id="back-btn" onclick="voltar()">← Voltar</button>
+        <button id="close-loading" onclick="fecharLoading()">✖ Fechar Loading</button>
         <div id="game"></div>
     </div>
 
     <script>
         const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/';
+        const BIOS_BASE = 'https://vdmtx.github.io/retroarchonline/bios/';
         let jogos = [];
+        let neogeoBIOS = null;
+
+        // Tentar múltiplas BIOS NeoGeo
+        async function carregarBIOS() {
+            const biosFiles = ['neogeo.zip', 'neogeo(1).zip', 'neogeo(2).zip', 'neogeo(3).zip'];
+            
+            for (const biosFile of biosFiles) {
+                try {
+                    const url = BIOS_BASE + biosFile;
+                    const response = await fetch(url, {method: 'HEAD'});
+                    if (response.ok) {
+                        console.log(`✅ BIOS encontrada: ${biosFile}`);
+                        neogeoBIOS = url;
+                        return true;
+                    }
+                } catch(e) {
+                    console.log(`❌ BIOS não encontrada: ${biosFile}`);
+                }
+            }
+            return false;
+        }
 
         async function carregarJogos() {
+            await carregarBIOS();
             const response = await fetch('https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms');
             const files = await response.json();
             jogos = files.filter(f => f.name.endsWith('.zip')).map(f => ({
@@ -107,7 +74,10 @@
         }
 
         function mostrarJogos(lista) {
-            document.getElementById('stats').textContent = `${lista.length} jogo(s)`;
+            const neogeoCount = lista.filter(j => 
+                ['kof', 'mslug', 'samsho', 'garou', 'rbff', 'fatfury'].some(k => j.nome.toLowerCase().includes(k))
+            ).length;
+            document.getElementById('stats').textContent = `${lista.length} jogo(s) • BIOS: ${neogeoBIOS ? '✅' : '❌'}`;
             document.getElementById('gameGrid').innerHTML = lista.map(j => `
                 <div class="game-card" onclick="iniciarJogo('${j.arquivo}')">
                     <div class="game-icon">🕹️</div>
@@ -122,9 +92,11 @@
         }
 
         function iniciarJogo(arquivo) {
-            // Mostrar tela de loading
-            document.getElementById('loading-screen').classList.add('active');
             document.getElementById('game-container').style.display = 'block';
+            document.getElementById('close-loading').style.display = 'block';
+            
+            const nomeJogo = arquivo.toLowerCase();
+            const isNeoGeo = ['kof', 'mslug', 'samsho', 'garou', 'rbff', 'fatfury', 'lastblad', 'metal'].some(k => nomeJogo.includes(k));
             
             window.EJS_player = "#game";
             window.EJS_core = "fbneo";
@@ -132,17 +104,15 @@
             window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
             window.EJS_startOnLoaded = true;
             
-            // Quando o jogo estiver pronto, esconder loading
-            window.EJS_ready = function() {
-                setTimeout(() => {
-                    document.getElementById('loading-screen').classList.remove('active');
-                }, 2000);
-            };
+            // Adicionar BIOS se for NeoGeo
+            if (isNeoGeo && neogeoBIOS) {
+                window.EJS_biosUrl = neogeoBIOS;
+                console.log('🎮 Usando BIOS:', neogeoBIOS);
+            }
             
-            // Timeout - esconde loading após 15 segundos
             setTimeout(() => {
-                document.getElementById('loading-screen').classList.remove('active');
-            }, 15000);
+                document.getElementById('close-loading').style.display = 'none';
+            }, 10000);
             
             const script = document.createElement('script');
             script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
@@ -150,7 +120,7 @@
         }
 
         function fecharLoading() {
-            document.getElementById('loading-screen').classList.remove('active');
+            document.getElementById('close-loading').style.display = 'none';
         }
 
         function voltar() { location.reload(); }
