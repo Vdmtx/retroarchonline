@@ -20,7 +20,7 @@
         #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
         #game { width: 100%; height: 100%; }
         #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: #000; color: #fff; border: 2px solid #ff0088; padding: 12px 24px; cursor: pointer; font-weight: bold; }
-        #close-loading { position: fixed; top: 15px; right: 15px; z-index: 1002; background: #ff0000; color: #fff; border: 2px solid #ff0000; padding: 12px 24px; cursor: pointer; font-weight: bold; display: none; }
+        #error-msg { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #ff0000; color: #fff; padding: 15px 30px; border-radius: 8px; display: none; z-index: 3000; }
     </style>
 </head>
 <body>
@@ -31,27 +31,30 @@
     <div class="game-grid" id="gameGrid"></div>
     <div id="game-container">
         <button id="back-btn" onclick="voltar()">← Voltar</button>
-        <button id="close-loading" onclick="fecharLoading()">✖ Fechar</button>
         <div id="game"></div>
     </div>
+    <div id="error-msg"></div>
 
     <script>
         const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/';
         let jogos = [];
-        // Cores para tentar em ordem
-        const CORES = ['mame2003', 'mame2010', 'mame', 'fbneo'];
         const MIDWAY_GAMES = ['mk', 'mortal', 'nba', 'nfl', 'cruisn', 'hydro', 'offroad', 'rampage', 'warfa', 'smlkstrm'];
 
         async function carregarJogos() {
-            const response = await fetch('https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms');
-            const files = await response.json();
-            jogos = files.filter(f => {
-                if (!f.name.endsWith('.zip')) return false;
-                const nome = f.name.toLowerCase();
-                return MIDWAY_GAMES.some(k => nome.includes(k));
-            }).map(f => ({ nome: f.name.replace('.zip', ''), arquivo: f.name }))
-              .sort((a, b) => a.nome.localeCompare(b.nome));
-            mostrarJogos(jogos);
+            try {
+                const response = await fetch('https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms');
+                const files = await response.json();
+                jogos = files.filter(f => {
+                    if (!f.name.endsWith('.zip')) return false;
+                    const nome = f.name.toLowerCase();
+                    return MIDWAY_GAMES.some(k => nome.includes(k));
+                }).map(f => ({ nome: f.name.replace('.zip', ''), arquivo: f.name }))
+                  .sort((a, b) => a.nome.localeCompare(b.nome));
+                mostrarJogos(jogos);
+            } catch (e) {
+                console.error('Erro ao carregar jogos:', e);
+                document.getElementById('gameGrid').innerHTML = '<div style="color:#f00;text-align:center;grid-column:1/-1;">Erro ao carregar jogos</div>';
+            }
         }
 
         function mostrarJogos(lista) {
@@ -69,66 +72,84 @@
             mostrarJogos(jogos.filter(j => j.nome.toLowerCase().includes(busca)));
         }
 
-        async function iniciarJogo(arquivo) {
-            document.getElementById('game-container').style.display = 'block';
-            document.getElementById('close-loading').style.display = 'block';
-            
-            const romUrl = ROMS_BASE + arquivo;
-            let sucesso = false;
-            
-            // Tentar cada core até funcionar
-            for (const core of CORES) {
-                try {
-                    console.log(`🔄 Tentando core: ${core}`);
-                    
-                    // Limpar configurações anteriores
-                    document.getElementById('game').innerHTML = '';
-                    
-                    window.EJS_player = "#game";
-                    window.EJS_core = core;
-                    window.EJS_gameUrl = romUrl;
-                    window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
-                    window.EJS_startOnLoaded = true;
-                    
-                    // Carregar loader
-                    const script = document.createElement('script');
-                    script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
-                    
-                    // Timeout para detectar falha
-                    const timeout = setTimeout(() => {
-                        if (!sucesso) {
-                            console.warn(`❌ Core ${core} falhou (timeout)`);
-                        }
-                    }, 15000);
-                    
-                    script.onload = function() {
-                        clearTimeout(timeout);
-                        console.log(`✅ Core ${core} funcionou!`);
-                        sucesso = true;
-                        setTimeout(() => { 
-                            document.getElementById('close-loading').style.display = 'none'; 
-                        }, 2000);
-                    };
-                    
-                    document.body.appendChild(script);
-                    
-                    // Aguardar um pouco antes de tentar próximo core
-                    await new Promise(resolve => setTimeout(resolve, 16000));
-                    
-                    if (sucesso) break;
-                    
-                } catch (e) {
-                    console.error(`❌ Erro com core ${core}:`, e);
-                }
-            }
-            
-            if (!sucesso) {
-                alert('❌ Nenhum core funcionou para este jogo.\n\nTente:\n1. Verificar se a ROM é válida\n2. Testar outra ROM\n3. Verificar o console (F12) para mais detalhes');
-                document.getElementById('close-loading').style.display = 'none';
-            }
+        function mostrarErro(msg) {
+            const errDiv = document.getElementById('error-msg');
+            errDiv.textContent = msg;
+            errDiv.style.display = 'block';
+            setTimeout(() => { errDiv.style.display = 'none'; }, 5000);
         }
 
-        function fecharLoading() { document.getElementById('close-loading').style.display = 'none'; }
+        function iniciarJogo(arquivo) {
+            console.log('🎮 Iniciando jogo:', arquivo);
+            document.getElementById('game-container').style.display = 'block';
+            
+            const romUrl = ROMS_BASE + encodeURIComponent(arquivo);
+            
+            // Verificar se a ROM existe
+            fetch(romUrl, {method: 'HEAD'})
+                .then(r => {
+                    if (!r.ok) {
+                        throw new Error('ROM não encontrada: ' + r.status);
+                    }
+                    console.log('✅ ROM encontrada:', arquivo);
+                    carregarEmulatorJS(arquivo);
+                })
+                .catch(e => {
+                    console.error('❌ Erro:', e);
+                    mostrarErro('❌ Erro ao carregar ROM: ' + e.message);
+                    setTimeout(() => { document.getElementById('game-container').style.display = 'none'; }, 2000);
+                });
+        }
+
+        function carregarEmulatorJS(arquivo) {
+            const romUrl = ROMS_BASE + encodeURIComponent(arquivo);
+            
+            // Limpar configurações anteriores
+            Object.keys(window).forEach(key => {
+                if (key.startsWith('EJS_')) delete window[key];
+            });
+            document.getElementById('game').innerHTML = '';
+            
+            // Configurar EmulatorJS
+            window.EJS_player = "#game";
+            window.EJS_core = "fbneo";  // FBNeo funciona melhor para Midway
+            window.EJS_gameUrl = romUrl;
+            window.EJS_gameName = arquivo.replace('.zip', '');
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
+            window.EJS_startOnLoaded = true;
+            window.EJS_color = "#000000";
+            
+            console.log('📦 Carregando EmulatorJS...');
+            console.log('🎮 ROM:', romUrl);
+            console.log('⚙️ Core: fbneo');
+            
+            // Callback quando pronto
+            window.EJS_ready = function() {
+                console.log('✅ Jogo carregado com sucesso!');
+            };
+            
+            // Callback de erro
+            window.EJS_onGameStart = function() {
+                console.log('🎮 Jogo iniciado!');
+            };
+            
+            // Carregar script
+            const script = document.createElement('script');
+            script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
+            
+            script.onload = function() {
+                console.log('✅ Loader carregado');
+            };
+            
+            script.onerror = function() {
+                console.error('❌ Erro ao carregar EmulatorJS');
+                mostrarErro('❌ Erro ao carregar emulador');
+            };
+            
+            document.body.appendChild(script);
+            console.log('📝 Script adicionado');
+        }
+
         function voltar() { location.reload(); }
         carregarJogos();
     </script>
