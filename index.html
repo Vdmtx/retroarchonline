@@ -14,14 +14,12 @@
         .search-box input:focus { border-color: #00ff88; background: rgba(255,255,255,0.15); }
         .stats { text-align: center; color: #00ff88; margin-bottom: 20px; font-size: 14px; }
         .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .game-card { background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%); border: 2px solid #333; border-radius: 12px; padding: 20px; cursor: pointer; text-align: center; transition: all 0.3s; position: relative; overflow: hidden; }
-        .game-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0,255,136,0.1), transparent); transition: left 0.5s; }
-        .game-card:hover::before { left: 100%; }
-        .game-card:hover { transform: translateY(-5px) scale(1.02); border-color: #00ff88; box-shadow: 0 10px 30px rgba(0,255,136,0.3); }
-        .game-icon { font-size: 56px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(0,255,136,0.3)); }
-        .game-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .game-card { background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%); border: 2px solid #333; border-radius: 12px; padding: 20px; cursor: pointer; text-align: center; transition: all 0.3s; }
+        .game-card:hover { transform: translateY(-5px); border-color: #00ff88; box-shadow: 0 10px 30px rgba(0,255,136,0.3); }
+        .game-icon { font-size: 56px; margin-bottom: 15px; }
+        .game-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; }
         .game-size { color: #888; font-size: 12px; }
-        .system-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 5px; font-weight: bold; }
+        .system-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 5px; }
         .cps2 { background: #0088ff33; color: #00aaff; }
         .cps3 { background: #8800ff33; color: #aa00ff; }
         .midway { background: #ff008833; color: #ff00aa; }
@@ -29,32 +27,23 @@
         .mame { background: #00ff8833; color: #00ff88; }
         #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
         #game { width: 100%; height: 100%; }
-        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: rgba(0,0,0,0.9); color: #fff; border: 2px solid #00ff88; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.3s; }
-        #back-btn:hover { background: #00ff88; color: #000; transform: scale(1.05); }
-        #loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 40px; border: 2px solid #00ff88; border-radius: 12px; z-index: 2000; text-align: center; min-width: 400px; box-shadow: 0 0 40px rgba(0,255,136,0.3); }
-        #loading h2 { color: #00ff88; margin-bottom: 20px; font-size: 24px; }
+        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: rgba(0,0,0,0.9); color: #fff; border: 2px solid #00ff88; padding: 12px 24px; cursor: pointer; font-weight: bold; }
+        #back-btn:hover { background: #00ff88; color: #000; }
+        #loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 40px; border: 2px solid #00ff88; border-radius: 12px; z-index: 2000; text-align: center; min-width: 400px; }
+        #loading h2 { color: #00ff88; margin-bottom: 20px; }
         .progress-bar { width: 100%; height: 25px; background: #1a1a2e; border: 2px solid #00ff88; border-radius: 12px; overflow: hidden; margin: 15px 0; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00cc6a); width: 0%; transition: width 0.3s ease; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00cc6a); width: 0%; transition: width 0.3s; }
         #statusText { margin-top: 10px; color: #888; font-size: 14px; }
-        .loading-text { text-align: center; padding: 40px; color: #00ff88; font-size: 18px; grid-column: 1/-1; }
-        .warning-box { background: rgba(255,170,0,0.2); border: 2px solid #ffaa00; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 600px; text-align: center; }
-        .warning-box h3 { color: #ffaa00; margin-bottom: 10px; }
-        @media (max-width: 768px) {
-            .game-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; padding: 10px; }
-            .game-icon { font-size: 40px; }
-        }
     </style>
 </head>
 <body>
     <h1>🎮 Minha Biblioteca Arcade</h1>
-    <p class="subtitle">CPS2 • CPS3 • Midway • NeoGeo • MAME</p>
+    <p class="subtitle">CDN EmulatorJS • CPS2/CPS3/Midway/NeoGeo</p>
     <div class="search-box">
         <input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()">
     </div>
     <div class="stats" id="stats"></div>
-    <div class="game-grid" id="gameGrid">
-        <div class="loading-text">🔄 Escaneando pasta roms...</div>
-    </div>
+    <div class="game-grid" id="gameGrid"></div>
     <div id="loading">
         <h2>🎮 Carregando...</h2>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -68,12 +57,11 @@
     <script>
         const REPO = 'Vdmtx/retroarchonline';
         const ROMS_PATH = 'roms';
-        const BIOS_PATH = 'bios';
         const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/';
         const BIOS_BASE = 'https://vdmtx.github.io/retroarchonline/bios/';
-        const EJS_PATH = 'https://vdmtx.github.io/retroarchonline/data/';
+        // USAR CDN OFICIAL DO EMULATORJS!
+        const EJS_PATH = 'https://cdn.emulatorjs.org/latest/data/';
         
-        // Sistemas testados e funcionando ✅
         const CPS2_GAMES = ['xmen', 'msh', 'mvc', 'vsav', 'mbomber', 'megaman', '1944', 'cybots', 'pzloop2', 'sfa2', 'sfz2al', 'sfa3', 'sfz3'];
         const CPS3_GAMES = ['sfiii', 'sfiii2', 'sfiii3', 'jojo', 'redearth', 'wof'];
         const MIDWAY_GAMES = ['mk', 'mortal', 'nba', 'nfl', 'nfl2k', 'cruisn', 'cruisn2', 'cruiswld', 'hydro', 'offroad', 'ramapage', 'smlkstrm', 'warfa', 'wfdd'];
@@ -83,91 +71,26 @@
         let jogos = [];
         let jogosFiltrados = [];
         let neogeoBIOS = null;
-        let neogeoBIOSPath = null;
 
         function detectarSistema(nomeArquivo) {
             const nome = nomeArquivo.toLowerCase();
-            
-            // CPS2 - Funcionando ✅
-            if (CPS2_GAMES.some(k => nome.includes(k))) {
-                return { sistema: 'cps2', core: 'fbneo', badge: 'CPS2', class: 'cps2', precisaBIOS: false };
-            }
-            
-            // CPS3 - Funcionando ✅
-            if (CPS3_GAMES.some(k => nome.includes(k))) {
-                return { sistema: 'cps3', core: 'fbneo', badge: 'CPS3', class: 'cps3', precisaBIOS: false };
-            }
-            
-            // Midway - Funcionando ✅
-            if (MIDWAY_GAMES.some(k => nome.includes(k))) {
-                return { sistema: 'midway', core: 'mame2003', badge: 'MIDWAY', class: 'midway', precisaBIOS: false };
-            }
-            
-            // NeoGeo - Precisa BIOS completa ⚠️
-            if (NEOGEO_GAMES.some(k => nome.includes(k))) {
-                return { sistema: 'neogeo', core: 'fbneo', badge: 'NEOGEO', class: 'neogeo', precisaBIOS: true };
-            }
-            
-            // MAME genérico
-            if (MAME_GAMES.some(k => nome.includes(k))) {
-                return { sistema: 'mame', core: 'mame2003', badge: 'MAME', class: 'mame', precisaBIOS: false };
-            }
-            
-            // Default: FBNeo
+            if (CPS2_GAMES.some(k => nome.includes(k))) return { sistema: 'cps2', core: 'fbneo', badge: 'CPS2', class: 'cps2', precisaBIOS: false };
+            if (CPS3_GAMES.some(k => nome.includes(k))) return { sistema: 'cps3', core: 'fbneo', badge: 'CPS3', class: 'cps3', precisaBIOS: false };
+            if (MIDWAY_GAMES.some(k => nome.includes(k))) return { sistema: 'midway', core: 'mame2003', badge: 'MIDWAY', class: 'midway', precisaBIOS: false };
+            if (NEOGEO_GAMES.some(k => nome.includes(k))) return { sistema: 'neogeo', core: 'fbneo', badge: 'NEOGEO', class: 'neogeo', precisaBIOS: true };
+            if (MAME_GAMES.some(k => nome.includes(k))) return { sistema: 'mame', core: 'mame2003', badge: 'MAME', class: 'mame', precisaBIOS: false };
             return { sistema: 'arcade', core: 'fbneo', badge: 'ARCADE', class: 'mame', precisaBIOS: false };
         }
 
         async function buscarNeoGeoBIOS() {
-            console.log('🔍 Buscando NeoGeo BIOS...');
-            
-            // Tentar 1: /roms/neogeo.zip
             try {
-                console.log('📁 Tentando: /roms/neogeo.zip');
-                const response = await fetch(ROMS_BASE + 'neogeo.zip', {method: 'HEAD'});
-                if (response.ok) {
-                    neogeoBIOS = ROMS_BASE + 'neogeo.zip';
-                    neogeoBIOSPath = '/roms/neogeo.zip';
-                    console.log('✅ BIOS encontrada em /roms/');
-                    return true;
-                }
-            } catch(e) {
-                console.log('❌ Não encontrada em /roms/');
-            }
-            
-            // Tentar 2: /bios/neogeo.zip
+                const r1 = await fetch(ROMS_BASE + 'neogeo.zip', {method: 'HEAD'});
+                if (r1.ok) { neogeoBIOS = ROMS_BASE + 'neogeo.zip'; return true; }
+            } catch(e) {}
             try {
-                console.log('📁 Tentando: /bios/neogeo.zip');
-                const response = await fetch(BIOS_BASE + 'neogeo.zip', {method: 'HEAD'});
-                if (response.ok) {
-                    neogeoBIOS = BIOS_BASE + 'neogeo.zip';
-                    neogeoBIOSPath = '/bios/neogeo.zip';
-                    console.log('✅ BIOS encontrada em /bios/');
-                    return true;
-                }
-            } catch(e) {
-                console.log('❌ Não encontrada em /bios/');
-            }
-            
-            // Tentar 3: Verificar se há algum neogeo.zip na API
-            try {
-                console.log('🔍 Buscando via API...');
-                const apiUrl = `https://api.github.com/repos/${REPO}/contents/${BIOS_PATH}`;
-                const response = await fetch(apiUrl);
-                if (response.ok) {
-                    const files = await response.json();
-                    const neogeoFile = files.find(f => f.name.toLowerCase() === 'neogeo.zip');
-                    if (neogeoFile) {
-                        neogeoBIOS = neogeoFile.download_url;
-                        neogeoBIOSPath = '/bios/' + neogeoFile.name;
-                        console.log('✅ BIOS encontrada via API:', neogeoBIOSPath);
-                        return true;
-                    }
-                }
-            } catch(e) {
-                console.log('❌ Não encontrada via API');
-            }
-            
-            console.warn('⚠️ NeoGeo BIOS NÃO encontrada em nenhum local!');
+                const r2 = await fetch(BIOS_BASE + 'neogeo.zip', {method: 'HEAD'});
+                if (r2.ok) { neogeoBIOS = BIOS_BASE + 'neogeo.zip'; return true; }
+            } catch(e) {}
             return false;
         }
 
@@ -175,13 +98,10 @@
             try {
                 const apiUrl = `https://api.github.com/repos/${REPO}/contents/${ROMS_PATH}`;
                 const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('Erro ao acessar repositório');
+                if (!response.ok) throw new Error('Erro');
                 const files = await response.json();
                 jogos = [];
-                
-                // Buscar BIOS ANTES de listar jogos
                 await buscarNeoGeoBIOS();
-                
                 files.forEach(file => {
                     if (file.name.toLowerCase().endsWith('.zip') && file.name.toLowerCase() !== 'neogeo.zip') {
                         const nomeLimpo = file.name.replace(/\.zip$/i, '').replace(/[_-]/g, ' ');
@@ -190,11 +110,11 @@
                     }
                 });
                 jogos = jogos.sort((a, b) => a.nome.localeCompare(b.nome));
-                if (jogos.length === 0) throw new Error('Nenhum arquivo ZIP encontrado');
+                if (jogos.length === 0) throw new Error('Nenhum ZIP');
                 jogosFiltrados = [...jogos];
                 renderizarJogos();
             } catch (error) {
-                document.getElementById('gameGrid').innerHTML = `<div style="background:#f0000022;border:2px solid #f00;padding:30px;border-radius:8px;text-align:center;grid-column:1/-1;color:#f88;"><h3 style="color:#f44;margin-bottom:15px;">❌ Erro</h3><p><strong>${error.message}</strong></p></div>`;
+                document.getElementById('gameGrid').innerHTML = `<div style="background:#f0000022;border:2px solid #f00;padding:30px;border-radius:8px;text-align:center;grid-column:1/-1;color:#f88;"><h3>❌ Erro</h3><p>${error.message}</p></div>`;
             }
         }
 
@@ -202,22 +122,18 @@
             const grid = document.getElementById('gameGrid');
             const stats = document.getElementById('stats');
             if (jogosFiltrados.length === 0) { 
-                grid.innerHTML = '<div class="loading-text">Nenhum jogo encontrado</div>'; 
+                grid.innerHTML = '<div style="text-align:center;padding:40px;color:#888;grid-column:1/-1;">Nenhum jogo</div>'; 
                 stats.textContent = ''; return; 
             }
-            
             const counts = {};
             jogosFiltrados.forEach(j => { counts[j.sistema] = (counts[j.sistema] || 0) + 1; });
-            
             let statsText = `${jogosFiltrados.length} jogo(s)`;
-            if (counts.cps2) statsText += ` • ${counts.cps2} CPS2 ✅`;
-            if (counts.cps3) statsText += ` • ${counts.cps3} CPS3 ✅`;
-            if (counts.midway) statsText += ` • ${counts.midway} Midway ✅`;
-            if (counts.neogeo) statsText += ` • ${counts.neogeo} NeoGeo ${neogeoBIOS ? '✅' : '⚠️ BIOS faltando'}`;
+            if (counts.cps2) statsText += ` • ${counts.cps2} CPS2`;
+            if (counts.cps3) statsText += ` • ${counts.cps3} CPS3`;
+            if (counts.midway) statsText += ` • ${counts.midway} Midway`;
+            if (counts.neogeo) statsText += ` • ${counts.neogeo} NeoGeo ${neogeoBIOS ? '✅' : '⚠️'}`;
             if (counts.mame) statsText += ` • ${counts.mame} MAME`;
-            
             stats.textContent = statsText;
-            
             grid.innerHTML = jogosFiltrados.map(jogo => `
                 <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}', '${jogo.core}', ${jogo.precisaBIOS})">
                     <div class="game-icon">🕹️</div>
@@ -233,14 +149,9 @@
             renderizarJogos();
         }
 
-        async function iniciarJogo(arquivo, nome, core, precisaBIOS) {
+        function iniciarJogo(arquivo, nome, core, precisaBIOS) {
             const loading = document.getElementById('loading');
-            const progressFill = document.getElementById('progressFill');
-            const statusText = document.getElementById('statusText');
-            
             loading.style.display = 'block';
-            progressFill.style.width = '20%';
-            statusText.textContent = 'Preparando...';
             
             const romUrl = ROMS_BASE + encodeURIComponent(arquivo);
             
@@ -250,14 +161,10 @@
             window.EJS_gameName = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             window.EJS_color = "#000000";
             window.EJS_startOnLoaded = true;
-            window.EJS_fullscreenOnLoaded = false;
-            window.EJS_pathtodata = EJS_PATH;
+            window.EJS_pathtodata = EJS_PATH; // CDN OFICIAL!
             
             if (precisaBIOS && neogeoBIOS) {
                 window.EJS_biosUrl = neogeoBIOS;
-                console.log('✅ BIOS configurada:', neogeoBIOSPath);
-            } else if (precisaBIOS && !neogeoBIOS) {
-                console.warn('⚠️ Jogo NeoGeo sem BIOS!');
             }
             
             window.EJS_VirtualGamepadSettings = [
@@ -273,20 +180,16 @@
             ];
             
             document.getElementById('game-container').style.display = 'block';
-            progressFill.style.width = '60%';
-            statusText.textContent = 'Carregando emulador...';
             
             const script = document.createElement('script');
             script.src = EJS_PATH + 'loader.js';
             
             script.onload = function() {
-                progressFill.style.width = '100%';
-                statusText.textContent = 'Jogo iniciado!';
-                setTimeout(() => { loading.style.display = 'none'; }, 1000);
+                loading.style.display = 'none';
             };
             
             script.onerror = function() {
-                alert('❌ Erro ao carregar EmulatorJS\n\nVerifique se a pasta data/ está completa');
+                alert('Erro ao carregar EmulatorJS');
                 loading.style.display = 'none';
             };
             
