@@ -38,6 +38,8 @@
     <script>
         const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/';
         let jogos = [];
+        // Cores para tentar em ordem
+        const CORES = ['mame2003', 'mame2010', 'mame', 'fbneo'];
         const MIDWAY_GAMES = ['mk', 'mortal', 'nba', 'nfl', 'cruisn', 'hydro', 'offroad', 'rampage', 'warfa', 'smlkstrm'];
 
         async function carregarJogos() {
@@ -67,18 +69,63 @@
             mostrarJogos(jogos.filter(j => j.nome.toLowerCase().includes(busca)));
         }
 
-        function iniciarJogo(arquivo) {
+        async function iniciarJogo(arquivo) {
             document.getElementById('game-container').style.display = 'block';
             document.getElementById('close-loading').style.display = 'block';
-            window.EJS_player = "#game";
-            window.EJS_core = "mame2003";
-            window.EJS_gameUrl = ROMS_BASE + arquivo;
-            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
-            window.EJS_startOnLoaded = true;
-            setTimeout(() => { document.getElementById('close-loading').style.display = 'none'; }, 10000);
-            const script = document.createElement('script');
-            script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
-            document.body.appendChild(script);
+            
+            const romUrl = ROMS_BASE + arquivo;
+            let sucesso = false;
+            
+            // Tentar cada core até funcionar
+            for (const core of CORES) {
+                try {
+                    console.log(`🔄 Tentando core: ${core}`);
+                    
+                    // Limpar configurações anteriores
+                    document.getElementById('game').innerHTML = '';
+                    
+                    window.EJS_player = "#game";
+                    window.EJS_core = core;
+                    window.EJS_gameUrl = romUrl;
+                    window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
+                    window.EJS_startOnLoaded = true;
+                    
+                    // Carregar loader
+                    const script = document.createElement('script');
+                    script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
+                    
+                    // Timeout para detectar falha
+                    const timeout = setTimeout(() => {
+                        if (!sucesso) {
+                            console.warn(`❌ Core ${core} falhou (timeout)`);
+                        }
+                    }, 15000);
+                    
+                    script.onload = function() {
+                        clearTimeout(timeout);
+                        console.log(`✅ Core ${core} funcionou!`);
+                        sucesso = true;
+                        setTimeout(() => { 
+                            document.getElementById('close-loading').style.display = 'none'; 
+                        }, 2000);
+                    };
+                    
+                    document.body.appendChild(script);
+                    
+                    // Aguardar um pouco antes de tentar próximo core
+                    await new Promise(resolve => setTimeout(resolve, 16000));
+                    
+                    if (sucesso) break;
+                    
+                } catch (e) {
+                    console.error(`❌ Erro com core ${core}:`, e);
+                }
+            }
+            
+            if (!sucesso) {
+                alert('❌ Nenhum core funcionou para este jogo.\n\nTente:\n1. Verificar se a ROM é válida\n2. Testar outra ROM\n3. Verificar o console (F12) para mais detalhes');
+                document.getElementById('close-loading').style.display = 'none';
+            }
         }
 
         function fecharLoading() { document.getElementById('close-loading').style.display = 'none'; }
