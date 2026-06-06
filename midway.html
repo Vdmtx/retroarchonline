@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥋 Midway</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0a; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #ff0088; text-align: center; margin-bottom: 20px; }
+        .back-link { text-align: center; margin-bottom: 20px; }
+        .back-link a { color: #00ff88; text-decoration: none; }
+        .search-box { max-width: 600px; margin: 0 auto 30px; }
+        .search-box input { width: 100%; padding: 12px; border: 2px solid #ff0088; border-radius: 25px; background: #1a1a2e; color: #fff; font-size: 16px; }
+        .stats { text-align: center; color: #ff0088; margin-bottom: 20px; }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; }
+        .game-card { background: #1a1a2e; border: 2px solid #ff0088; border-radius: 12px; padding: 20px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .game-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(255,0,136,0.3); }
+        .game-icon { font-size: 56px; margin-bottom: 15px; }
+        #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
+        #game { width: 100%; height: 100%; }
+        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: #000; color: #fff; border: 2px solid #ff0088; padding: 12px 24px; cursor: pointer; font-weight: bold; }
+        #close-loading { position: fixed; top: 15px; right: 15px; z-index: 1002; background: #ff0000; color: #fff; border: 2px solid #ff0000; padding: 12px 24px; cursor: pointer; font-weight: bold; display: none; }
+    </style>
+</head>
+<body>
+    <h1>🥋 MIDWAY</h1>
+    <div class="back-link"><a href="index.html">← Voltar ao Menu</a></div>
+    <div class="search-box"><input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()"></div>
+    <div class="stats" id="stats"></div>
+    <div class="game-grid" id="gameGrid"></div>
+    <div id="game-container">
+        <button id="back-btn" onclick="voltar()">← Voltar</button>
+        <button id="close-loading" onclick="fecharLoading()">✖ Fechar</button>
+        <div id="game"></div>
+    </div>
+
+    <script>
+        const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/';
+        let jogos = [];
+        const MIDWAY_GAMES = ['mk', 'mortal', 'nba', 'nfl', 'cruisn', 'hydro', 'offroad', 'rampage', 'warfa', 'smlkstrm'];
+
+        async function carregarJogos() {
+            const response = await fetch('https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms');
+            const files = await response.json();
+            jogos = files.filter(f => {
+                if (!f.name.endsWith('.zip')) return false;
+                const nome = f.name.toLowerCase();
+                return MIDWAY_GAMES.some(k => nome.includes(k));
+            }).map(f => ({ nome: f.name.replace('.zip', ''), arquivo: f.name }))
+              .sort((a, b) => a.nome.localeCompare(b.nome));
+            mostrarJogos(jogos);
+        }
+
+        function mostrarJogos(lista) {
+            document.getElementById('stats').textContent = `${lista.length} jogo(s) Midway`;
+            document.getElementById('gameGrid').innerHTML = lista.map(j => `
+                <div class="game-card" onclick="iniciarJogo('${j.arquivo}')">
+                    <div class="game-icon">🥋</div>
+                    <div>${j.nome}</div>
+                </div>
+            `).join('');
+        }
+
+        function filtrarJogos() {
+            const busca = document.getElementById('search').value.toLowerCase();
+            mostrarJogos(jogos.filter(j => j.nome.toLowerCase().includes(busca)));
+        }
+
+        function iniciarJogo(arquivo) {
+            document.getElementById('game-container').style.display = 'block';
+            document.getElementById('close-loading').style.display = 'block';
+            window.EJS_player = "#game";
+            window.EJS_core = "mame2003";
+            window.EJS_gameUrl = ROMS_BASE + arquivo;
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
+            window.EJS_startOnLoaded = true;
+            setTimeout(() => { document.getElementById('close-loading').style.display = 'none'; }, 10000);
+            const script = document.createElement('script');
+            script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
+            document.body.appendChild(script);
+        }
+
+        function fecharLoading() { document.getElementById('close-loading').style.display = 'none'; }
+        function voltar() { location.reload(); }
+        carregarJogos();
+    </script>
+</body>
+</html>
