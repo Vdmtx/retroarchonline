@@ -10,6 +10,7 @@
         h1 { color: #ff8800; text-align: center; margin-bottom: 20px; }
         .back-link { text-align: center; margin-bottom: 20px; }
         .back-link a { color: #00ff88; text-decoration: none; }
+        .warning { background: #ff880022; border: 2px solid #ff8800; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 600px; text-align: center; color: #ffaa00; }
         .search-box { max-width: 600px; margin: 0 auto 30px; }
         .search-box input { width: 100%; padding: 12px; border: 2px solid #ff8800; border-radius: 25px; background: #1a1a2e; color: #fff; font-size: 16px; }
         .stats { text-align: center; color: #ff8800; margin-bottom: 20px; }
@@ -25,6 +26,7 @@
 <body>
     <h1>🔥 NEO GEO</h1>
     <div class="back-link"><a href="index.html">← Voltar ao Menu</a></div>
+    <div class="warning">⚠️ Requer BIOS NeoGeo completa na pasta bios/</div>
     <div class="search-box"><input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()"></div>
     <div class="stats" id="stats"></div>
     <div class="game-grid" id="gameGrid"></div>
@@ -47,11 +49,12 @@
                     const response = await fetch(url, {method: 'HEAD'});
                     if (response.ok) {
                         neogeoBIOS = url;
-                        console.log('✅ BIOS:', biosFile);
+                        console.log('✅ BIOS encontrada:', biosFile);
                         return true;
                     }
                 } catch(e) {}
             }
+            console.warn('⚠️ BIOS NeoGeo não encontrada!');
             return false;
         }
 
@@ -86,18 +89,49 @@
         function iniciarJogo(arquivo) {
             document.getElementById('game-container').style.display = 'block';
             
+            // Limpar TUDO
+            Object.keys(window).forEach(key => {
+                if (key.startsWith('EJS_')) delete window[key];
+            });
+            document.getElementById('game').innerHTML = '';
+            
+            // Configurações
             window.EJS_player = "#game";
             window.EJS_core = "fbneo";
             window.EJS_gameUrl = ROMS_BASE + arquivo;
+            window.EJS_gameName = arquivo.replace('.zip', '');
             window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
+            window.EJS_startOnLoaded = true;
+            window.EJS_color = "#000000";
+            window.EJS_fullscreenOnLoaded = false;
+            window.EJS_disableDatabases = true;
+            window.EJS_disableLocalStorage = true;
             
+            // Adicionar BIOS se existir
             if (neogeoBIOS) {
                 window.EJS_biosUrl = neogeoBIOS;
+                console.log('💾 BIOS:', neogeoBIOS);
+            } else {
+                console.warn('⚠️ BIOS NeoGeo não encontrada!');
             }
             
+            // Callbacks
+            window.EJS_ready = function() {
+                console.log('✅ Jogo carregado!');
+            };
+            
+            window.EJS_onGameStart = function() {
+                console.log('🎮 Jogo iniciado!');
+            };
+            
+            // Carregar
             const script = document.createElement('script');
             script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
             document.body.appendChild(script);
+            
+            console.log('🎮 Carregando:', arquivo);
+            console.log('📁 ROM:', ROMS_BASE + arquivo);
+            console.log('💾 BIOS:', neogeoBIOS || 'Nenhuma');
         }
 
         function voltar() { location.reload(); }
