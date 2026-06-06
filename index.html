@@ -17,15 +17,57 @@
         .game-icon { font-size: 56px; margin-bottom: 15px; }
         #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
         #game { width: 100%; height: 100%; }
-        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: #000; color: #fff; border: 2px solid #00ff88; padding: 12px 24px; cursor: pointer; font-weight: bold; }
+        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: #000; color: #fff; border: 2px solid #00ff88; padding: 12px 24px; cursor: pointer; font-weight: bold; z-index: 1002; }
         #back-btn:hover { background: #00ff88; color: #000; }
         
-        /* Esconder tela de loading do EmulatorJS */
-        #game-container .ejs-loading,
-        #game-container [class*="loading"],
-        #game-container .loading-overlay {
-            display: none !important;
+        /* Botão para fechar loading manualmente */
+        #close-loading {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1002;
+            background: #ff0000;
+            color: #fff;
+            border: 2px solid #ff0000;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: bold;
+            display: none;
         }
+        #close-loading:hover { background: #ff4444; }
+        
+        /* Tela de loading */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        #loading-screen.active { display: flex; }
+        .loading-box {
+            background: #000;
+            border: 2px solid #00ff88;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .loading-box h2 { color: #00ff88; margin-bottom: 20px; }
+        .loading-box button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #ff0000;
+            color: #fff;
+            border: 2px solid #ff0000;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .loading-box button:hover { background: #ff4444; }
     </style>
 </head>
 <body>
@@ -35,6 +77,16 @@
     </div>
     <div class="stats" id="stats"></div>
     <div class="game-grid" id="gameGrid"></div>
+    
+    <!-- Tela de loading com botão para fechar -->
+    <div id="loading-screen">
+        <div class="loading-box">
+            <h2>🎮 Carregando...</h2>
+            <p>Aguarde o jogo carregar</p>
+            <button onclick="fecharLoading()">✖ Fechar (se travar)</button>
+        </div>
+    </div>
+    
     <div id="game-container">
         <button id="back-btn" onclick="voltar()">← Voltar</button>
         <div id="game"></div>
@@ -58,7 +110,7 @@
             document.getElementById('stats').textContent = `${lista.length} jogo(s)`;
             document.getElementById('gameGrid').innerHTML = lista.map(j => `
                 <div class="game-card" onclick="iniciarJogo('${j.arquivo}')">
-                    <div class="game-icon">️</div>
+                    <div class="game-icon">🕹️</div>
                     <div>${j.nome}</div>
                 </div>
             `).join('');
@@ -70,6 +122,8 @@
         }
 
         function iniciarJogo(arquivo) {
+            // Mostrar tela de loading
+            document.getElementById('loading-screen').classList.add('active');
             document.getElementById('game-container').style.display = 'block';
             
             window.EJS_player = "#game";
@@ -78,14 +132,29 @@
             window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
             window.EJS_startOnLoaded = true;
             
-            // Callback quando o jogo estiver pronto - esconde loading
+            // Quando o jogo estiver pronto, esconder loading
             window.EJS_ready = function() {
-                console.log('✅ Jogo pronto!');
-                // Esconder qualquer overlay de loading
-                const overlays = document.querySelectorAll('#game-container [class*="loading"], #game-container .overlay');
-                overlays.forEach(el => el.style.display = 'none');
+                setTimeout(() => {
+                    document.getElementById('loading-screen').classList.remove('active');
+                }, 2000);
             };
             
-            // Timeout de segurança - esconde loading após 10 segundos
+            // Timeout - esconde loading após 15 segundos
             setTimeout(() => {
-                const overlays = document.querySelectorAll('#game-container [class*="loading"], #
+                document.getElementById('loading-screen').classList.remove('active');
+            }, 15000);
+            
+            const script = document.createElement('script');
+            script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
+            document.body.appendChild(script);
+        }
+
+        function fecharLoading() {
+            document.getElementById('loading-screen').classList.remove('active');
+        }
+
+        function voltar() { location.reload(); }
+        carregarJogos();
+    </script>
+</body>
+</html>
