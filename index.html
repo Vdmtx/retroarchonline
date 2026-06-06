@@ -6,48 +6,28 @@
     <title>🎮 Minha Biblioteca Arcade</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%); color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; min-height: 100vh; }
-        h1 { color: #00ff88; text-align: center; margin-bottom: 10px; font-size: 32px; text-shadow: 0 0 20px rgba(0,255,136,0.5); }
-        .subtitle { text-align: center; color: #888; margin-bottom: 30px; font-size: 14px; }
-        .search-box { max-width: 600px; margin: 0 auto 30px; padding: 0 20px; }
-        .search-box input { width: 100%; padding: 12px 20px; border: 2px solid #333; border-radius: 25px; background: rgba(255,255,255,0.1); color: #fff; font-size: 16px; outline: none; transition: all 0.3s; }
-        .search-box input:focus { border-color: #00ff88; background: rgba(255,255,255,0.15); }
-        .stats { text-align: center; color: #00ff88; margin-bottom: 20px; font-size: 14px; }
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .game-card { background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%); border: 2px solid #333; border-radius: 12px; padding: 20px; cursor: pointer; text-align: center; transition: all 0.3s; }
-        .game-card:hover { transform: translateY(-5px); border-color: #00ff88; box-shadow: 0 10px 30px rgba(0,255,136,0.3); }
+        body { background: #0a0a0a; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #00ff88; text-align: center; margin-bottom: 20px; }
+        .search-box { max-width: 600px; margin: 0 auto 30px; }
+        .search-box input { width: 100%; padding: 12px; border: 2px solid #333; border-radius: 25px; background: #1a1a2e; color: #fff; font-size: 16px; }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; }
+        .game-card { background: #1a1a2e; border: 2px solid #333; border-radius: 12px; padding: 20px; cursor: pointer; text-align: center; }
+        .game-card:hover { border-color: #00ff88; }
         .game-icon { font-size: 56px; margin-bottom: 15px; }
-        .game-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; }
-        .game-size { color: #888; font-size: 12px; }
-        .system-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 5px; }
-        .cps2 { background: #0088ff33; color: #00aaff; }
-        .cps3 { background: #8800ff33; color: #aa00ff; }
-        .midway { background: #ff008833; color: #ff00aa; }
-        .neogeo { background: #ff880033; color: #ffaa00; }
-        .mame { background: #00ff8833; color: #00ff88; }
         #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
         #game { width: 100%; height: 100%; }
-        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: rgba(0,0,0,0.9); color: #fff; border: 2px solid #00ff88; padding: 12px 24px; cursor: pointer; font-weight: bold; }
-        #back-btn:hover { background: #00ff88; color: #000; }
-        #loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 40px; border: 2px solid #00ff88; border-radius: 12px; z-index: 2000; text-align: center; min-width: 400px; }
-        #loading h2 { color: #00ff88; margin-bottom: 20px; }
-        .progress-bar { width: 100%; height: 25px; background: #1a1a2e; border: 2px solid #00ff88; border-radius: 12px; overflow: hidden; margin: 15px 0; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00cc6a); width: 0%; transition: width 0.3s; }
-        #statusText { margin-top: 10px; color: #888; font-size: 14px; }
+        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: #000; color: #fff; border: 2px solid #00ff88; padding: 12px 24px; cursor: pointer; }
+        #loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; padding: 40px; border: 2px solid #00ff88; z-index: 2000; text-align: center; }
     </style>
 </head>
 <body>
     <h1>🎮 Minha Biblioteca Arcade</h1>
-    <p class="subtitle">CDN EmulatorJS • CPS2/CPS3/Midway/NeoGeo</p>
     <div class="search-box">
         <input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()">
     </div>
-    <div class="stats" id="stats"></div>
     <div class="game-grid" id="gameGrid"></div>
     <div id="loading">
         <h2>🎮 Carregando...</h2>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-        <p id="statusText">Preparando...</p>
     </div>
     <div id="game-container">
         <button id="back-btn" onclick="voltar()">← Voltar</button>
@@ -55,149 +35,52 @@
     </div>
 
     <script>
-        const REPO = 'Vdmtx/retroarchonline';
-        const ROMS_PATH = 'roms';
         const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/';
-        const BIOS_BASE = 'https://vdmtx.github.io/retroarchonline/bios/';
-        // USAR CDN OFICIAL DO EMULATORJS!
-        const EJS_PATH = 'https://cdn.emulatorjs.org/latest/data/';
-        
-        const CPS2_GAMES = ['xmen', 'msh', 'mvc', 'vsav', 'mbomber', 'megaman', '1944', 'cybots', 'pzloop2', 'sfa2', 'sfz2al', 'sfa3', 'sfz3'];
-        const CPS3_GAMES = ['sfiii', 'sfiii2', 'sfiii3', 'jojo', 'redearth', 'wof'];
-        const MIDWAY_GAMES = ['mk', 'mortal', 'nba', 'nfl', 'nfl2k', 'cruisn', 'cruisn2', 'cruiswld', 'hydro', 'offroad', 'ramapage', 'smlkstrm', 'warfa', 'wfdd'];
-        const NEOGEO_GAMES = ['kof', 'mslug', 'samsho', 'garou', 'rbff', 'fatfury', 'lastblad', 'metal', 'matrim', 'shocktr', 'blazstar', 'sengoku', 'aof', 'lbow', 'ninjacom', 'rotd', 'wjammers', 'karatour', 'magdrop', 'pulstar', 'zedblade'];
-        const MAME_GAMES = ['sf2', 'captcomm', 'knights', 'dino', 'punisher', 'slammast', 'willow', 'mtwins', 'megaman', '1941', '1942', '1943', 'forgottn', 'lwonder', 'rtype', 'sonic', 'ddragon', 'finalfig', 'goldnaxe', 'shinobi', 'vectorman'];
-        
         let jogos = [];
-        let jogosFiltrados = [];
-        let neogeoBIOS = null;
 
-        function detectarSistema(nomeArquivo) {
-            const nome = nomeArquivo.toLowerCase();
-            if (CPS2_GAMES.some(k => nome.includes(k))) return { sistema: 'cps2', core: 'fbneo', badge: 'CPS2', class: 'cps2', precisaBIOS: false };
-            if (CPS3_GAMES.some(k => nome.includes(k))) return { sistema: 'cps3', core: 'fbneo', badge: 'CPS3', class: 'cps3', precisaBIOS: false };
-            if (MIDWAY_GAMES.some(k => nome.includes(k))) return { sistema: 'midway', core: 'mame2003', badge: 'MIDWAY', class: 'midway', precisaBIOS: false };
-            if (NEOGEO_GAMES.some(k => nome.includes(k))) return { sistema: 'neogeo', core: 'fbneo', badge: 'NEOGEO', class: 'neogeo', precisaBIOS: true };
-            if (MAME_GAMES.some(k => nome.includes(k))) return { sistema: 'mame', core: 'mame2003', badge: 'MAME', class: 'mame', precisaBIOS: false };
-            return { sistema: 'arcade', core: 'fbneo', badge: 'ARCADE', class: 'mame', precisaBIOS: false };
+        // Carregar jogos
+        async function carregarJogos() {
+            const response = await fetch('https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms');
+            const files = await response.json();
+            jogos = files.filter(f => f.name.endsWith('.zip')).map(f => ({
+                nome: f.name.replace('.zip', ''),
+                arquivo: f.name
+            }));
+            mostrarJogos(jogos);
         }
 
-        async function buscarNeoGeoBIOS() {
-            try {
-                const r1 = await fetch(ROMS_BASE + 'neogeo.zip', {method: 'HEAD'});
-                if (r1.ok) { neogeoBIOS = ROMS_BASE + 'neogeo.zip'; return true; }
-            } catch(e) {}
-            try {
-                const r2 = await fetch(BIOS_BASE + 'neogeo.zip', {method: 'HEAD'});
-                if (r2.ok) { neogeoBIOS = BIOS_BASE + 'neogeo.zip'; return true; }
-            } catch(e) {}
-            return false;
-        }
-
-        async function varrerPastaRoms() {
-            try {
-                const apiUrl = `https://api.github.com/repos/${REPO}/contents/${ROMS_PATH}`;
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('Erro');
-                const files = await response.json();
-                jogos = [];
-                await buscarNeoGeoBIOS();
-                files.forEach(file => {
-                    if (file.name.toLowerCase().endsWith('.zip') && file.name.toLowerCase() !== 'neogeo.zip') {
-                        const nomeLimpo = file.name.replace(/\.zip$/i, '').replace(/[_-]/g, ' ');
-                        const sistema = detectarSistema(file.name);
-                        jogos.push({ nome: nomeLimpo, arquivo: file.name, tamanho: file.size, ...sistema });
-                    }
-                });
-                jogos = jogos.sort((a, b) => a.nome.localeCompare(b.nome));
-                if (jogos.length === 0) throw new Error('Nenhum ZIP');
-                jogosFiltrados = [...jogos];
-                renderizarJogos();
-            } catch (error) {
-                document.getElementById('gameGrid').innerHTML = `<div style="background:#f0000022;border:2px solid #f00;padding:30px;border-radius:8px;text-align:center;grid-column:1/-1;color:#f88;"><h3>❌ Erro</h3><p>${error.message}</p></div>`;
-            }
-        }
-
-        function renderizarJogos() {
+        function mostrarJogos(lista) {
             const grid = document.getElementById('gameGrid');
-            const stats = document.getElementById('stats');
-            if (jogosFiltrados.length === 0) { 
-                grid.innerHTML = '<div style="text-align:center;padding:40px;color:#888;grid-column:1/-1;">Nenhum jogo</div>'; 
-                stats.textContent = ''; return; 
-            }
-            const counts = {};
-            jogosFiltrados.forEach(j => { counts[j.sistema] = (counts[j.sistema] || 0) + 1; });
-            let statsText = `${jogosFiltrados.length} jogo(s)`;
-            if (counts.cps2) statsText += ` • ${counts.cps2} CPS2`;
-            if (counts.cps3) statsText += ` • ${counts.cps3} CPS3`;
-            if (counts.midway) statsText += ` • ${counts.midway} Midway`;
-            if (counts.neogeo) statsText += ` • ${counts.neogeo} NeoGeo ${neogeoBIOS ? '✅' : '⚠️'}`;
-            if (counts.mame) statsText += ` • ${counts.mame} MAME`;
-            stats.textContent = statsText;
-            grid.innerHTML = jogosFiltrados.map(jogo => `
-                <div class="game-card" onclick="iniciarJogo('${jogo.arquivo}', '${jogo.nome}', '${jogo.core}', ${jogo.precisaBIOS})">
+            grid.innerHTML = lista.map(j => `
+                <div class="game-card" onclick="iniciarJogo('${j.arquivo}')">
                     <div class="game-icon">🕹️</div>
-                    <div class="game-title">${jogo.nome} <span class="system-badge ${jogo.class}">${jogo.badge}</span></div>
-                    <div class="game-size">${(jogo.tamanho/1024/1024).toFixed(1)} MB</div>
+                    <div>${j.nome}</div>
                 </div>
             `).join('');
         }
 
         function filtrarJogos() {
             const busca = document.getElementById('search').value.toLowerCase();
-            jogosFiltrados = busca.length === 0 ? [...jogos] : jogos.filter(j => j.nome.toLowerCase().includes(busca));
-            renderizarJogos();
+            mostrarJogos(jogos.filter(j => j.nome.toLowerCase().includes(busca)));
         }
 
-        function iniciarJogo(arquivo, nome, core, precisaBIOS) {
-            const loading = document.getElementById('loading');
-            loading.style.display = 'block';
-            
-            const romUrl = ROMS_BASE + encodeURIComponent(arquivo);
-            
-            window.EJS_player = "#game";
-            window.EJS_core = core;
-            window.EJS_gameUrl = romUrl;
-            window.EJS_gameName = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
-            window.EJS_color = "#000000";
-            window.EJS_startOnLoaded = true;
-            window.EJS_pathtodata = EJS_PATH; // CDN OFICIAL!
-            
-            if (precisaBIOS && neogeoBIOS) {
-                window.EJS_biosUrl = neogeoBIOS;
-            }
-            
-            window.EJS_VirtualGamepadSettings = [
-                {"type":"button","text":"A","id":"a","location":"right","right":145,"top":80,"bold":true,"input_value":0},
-                {"type":"button","text":"B","id":"b","location":"right","right":75,"top":80,"bold":true,"input_value":8},
-                {"type":"button","text":"C","id":"c","location":"right","right":5,"top":80,"bold":true,"input_value":11},
-                {"type":"button","text":"X","id":"x","location":"right","right":145,"top":10,"bold":true,"input_value":1},
-                {"type":"button","text":"Y","id":"y","location":"right","right":75,"top":10,"bold":true,"input_value":9},
-                {"type":"button","text":"Z","id":"z","location":"right","right":5,"top":10,"bold":true,"input_value":10},
-                {"type":"dpad","location":"left","left":"50%","right":"50%","joystickInput":false,"inputValues":[4,5,6,7]},
-                {"type":"button","text":"Coin","id":"select","location":"center","left":-5,"fontSize":15,"block":true,"input_value":2},
-                {"type":"button","text":"Start","id":"start","location":"center","left":60,"fontSize":15,"block":true,"input_value":3}
-            ];
-            
+        function iniciarJogo(arquivo) {
+            document.getElementById('loading').style.display = 'block';
             document.getElementById('game-container').style.display = 'block';
             
+            window.EJS_player = "#game";
+            window.EJS_core = "fbneo";
+            window.EJS_gameUrl = ROMS_BASE + arquivo;
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
+            window.EJS_startOnLoaded = true;
+            
             const script = document.createElement('script');
-            script.src = EJS_PATH + 'loader.js';
-            
-            script.onload = function() {
-                loading.style.display = 'none';
-            };
-            
-            script.onerror = function() {
-                alert('Erro ao carregar EmulatorJS');
-                loading.style.display = 'none';
-            };
-            
+            script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
             document.body.appendChild(script);
         }
 
         function voltar() { location.reload(); }
-        varrerPastaRoms();
+        carregarJogos();
     </script>
 </body>
 </html>
