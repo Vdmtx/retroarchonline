@@ -80,21 +80,24 @@
         function iniciarJogo(arquivo) {
             document.getElementById('game-container').style.display = 'block';
             
-            // Limpar configurações anteriores
+            // Limpar TUDO
             Object.keys(window).forEach(key => {
                 if (key.startsWith('EJS_')) delete window[key];
             });
             document.getElementById('game').innerHTML = '';
             
-            // Configurações CRÍTICAS para carregar direto
+            // Configurações completas
             window.EJS_player = "#game";
             window.EJS_core = "fbneo";
             window.EJS_gameUrl = ROMS_BASE + arquivo;
             window.EJS_gameName = arquivo.replace('.zip', '');
             window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
-            window.EJS_startOnLoaded = true;  // ← CRÍTICO: Inicia automaticamente
+            window.EJS_startOnLoaded = true;
             window.EJS_color = "#000000";
             window.EJS_fullscreenOnLoaded = false;
+            window.EJS_disableDatabases = true;  // ← Evita File Browser
+            window.EJS_disableLocalStorage = true;  // ← Evita salvar estado
+            window.EJS_noAutoFocus = false;
             
             // Callbacks
             window.EJS_ready = function() {
@@ -109,6 +112,9 @@
             const script = document.createElement('script');
             script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
             document.body.appendChild(script);
+            
+            console.log('🎮 Carregando:', arquivo);
+            console.log('📁 URL:', ROMS_BASE + arquivo);
         }
 
         function voltar() { location.reload(); }
