@@ -3,128 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Minha Biblioteca Arcade</title>
+    <title>🎮 Arcade Library</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0a; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
-        h1 { color: #00ff88; text-align: center; margin-bottom: 20px; }
-        .search-box { max-width: 600px; margin: 0 auto 30px; }
-        .search-box input { width: 100%; padding: 12px; border: 2px solid #333; border-radius: 25px; background: #1a1a2e; color: #fff; font-size: 16px; }
-        .stats { text-align: center; color: #00ff88; margin-bottom: 20px; }
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; }
-        .game-card { background: #1a1a2e; border: 2px solid #333; border-radius: 12px; padding: 20px; cursor: pointer; text-align: center; transition: 0.3s; }
-        .game-card:hover { border-color: #00ff88; transform: translateY(-5px); }
-        .game-icon { font-size: 56px; margin-bottom: 15px; }
-        #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
-        #game { width: 100%; height: 100%; }
-        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: #000; color: #fff; border: 2px solid #00ff88; padding: 12px 24px; cursor: pointer; font-weight: bold; }
-        #back-btn:hover { background: #00ff88; color: #000; }
-        #close-loading { position: fixed; top: 15px; right: 15px; z-index: 1002; background: #ff0000; color: #fff; border: 2px solid #ff0000; padding: 12px 24px; cursor: pointer; font-weight: bold; display: none; }
-        #close-loading:hover { background: #ff4444; }
+        body { 
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%); 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            padding: 40px; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 { 
+            color: #00ff88; 
+            text-align: center; 
+            margin-bottom: 40px; 
+            font-size: 42px; 
+            text-shadow: 0 0 30px rgba(0,255,136,0.5); 
+        }
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 30px; 
+            max-width: 1000px; 
+            width: 100%;
+        }
+        .menu-card { 
+            background: linear-gradient(145deg, #1a1a2e, #16213e); 
+            border: 3px solid #333; 
+            border-radius: 20px; 
+            padding: 40px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+        }
+        .menu-card:hover { 
+            transform: translateY(-10px) scale(1.05); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .menu-card.cps { border-color: #0088ff; }
+        .menu-card.cps:hover { border-color: #00aaff; box-shadow: 0 20px 40px rgba(0,136,255,0.3); }
+        .menu-card.midway { border-color: #ff0088; }
+        .menu-card.midway:hover { border-color: #ff00aa; box-shadow: 0 20px 40px rgba(255,0,136,0.3); }
+        .menu-card.neogeo { border-color: #ff8800; }
+        .menu-card.neogeo:hover { border-color: #ffaa00; box-shadow: 0 20px 40px rgba(255,136,0,0.3); }
+        .menu-icon { font-size: 80px; margin-bottom: 20px; }
+        .menu-title { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+        .menu-desc { color: #888; font-size: 14px; }
+        .status { 
+            display: inline-block; 
+            padding: 5px 15px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            margin-top: 15px; 
+            font-weight: bold;
+        }
+        .status.ok { background: #00ff8833; color: #00ff88; }
+        .status.warn { background: #ff880033; color: #ffaa00; }
     </style>
 </head>
 <body>
-    <h1>🎮 Minha Biblioteca Arcade</h1>
-    <div class="search-box">
-        <input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()">
+    <h1>🎮 ARCADE LIBRARY</h1>
+    <div class="menu-grid">
+        <a href="capcom.html" class="menu-card cps">
+            <div class="menu-icon">👊</div>
+            <div class="menu-title">CAPCOM</div>
+            <div class="menu-desc">CPS-2 • CPS-3<br>Street Fighter • Marvel vs Capcom • X-Men</div>
+            <span class="status ok">✅ FUNCIONANDO</span>
+        </a>
+        
+        <a href="midway.html" class="menu-card midway">
+            <div class="menu-icon">🥋</div>
+            <div class="menu-title">MIDWAY</div>
+            <div class="menu-desc">Mortal Kombat • NBA Jam • Cruis'n<br>Hydro Thunder • Rampage</div>
+            <span class="status ok">✅ FUNCIONANDO</span>
+        </a>
+        
+        <a href="neogeo.html" class="menu-card neogeo">
+            <div class="menu-icon">🔥</div>
+            <div class="menu-title">NEO GEO</div>
+            <div class="menu-desc">King of Fighters • Metal Slug<br>Samurai Shodown • Fatal Fury</div>
+            <span class="status warn">⚠️ BIOS INCOMPLETA</span>
+        </a>
     </div>
-    <div class="stats" id="stats"></div>
-    <div class="game-grid" id="gameGrid"></div>
-    <div id="game-container">
-        <button id="back-btn" onclick="voltar()">← Voltar</button>
-        <button id="close-loading" onclick="fecharLoading()">✖ Fechar Loading</button>
-        <div id="game"></div>
-    </div>
-
-    <script>
-        const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/';
-        const BIOS_BASE = 'https://vdmtx.github.io/retroarchonline/bios/';
-        let jogos = [];
-        let neogeoBIOS = null;
-
-        // Tentar múltiplas BIOS NeoGeo
-        async function carregarBIOS() {
-            const biosFiles = ['neogeo.zip', 'neogeo(1).zip', 'neogeo(2).zip', 'neogeo(3).zip'];
-            
-            for (const biosFile of biosFiles) {
-                try {
-                    const url = BIOS_BASE + biosFile;
-                    const response = await fetch(url, {method: 'HEAD'});
-                    if (response.ok) {
-                        console.log(`✅ BIOS encontrada: ${biosFile}`);
-                        neogeoBIOS = url;
-                        return true;
-                    }
-                } catch(e) {
-                    console.log(`❌ BIOS não encontrada: ${biosFile}`);
-                }
-            }
-            return false;
-        }
-
-        async function carregarJogos() {
-            await carregarBIOS();
-            const response = await fetch('https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms');
-            const files = await response.json();
-            jogos = files.filter(f => f.name.endsWith('.zip')).map(f => ({
-                nome: f.name.replace('.zip', ''),
-                arquivo: f.name
-            })).sort((a, b) => a.nome.localeCompare(b.nome));
-            mostrarJogos(jogos);
-        }
-
-        function mostrarJogos(lista) {
-            const neogeoCount = lista.filter(j => 
-                ['kof', 'mslug', 'samsho', 'garou', 'rbff', 'fatfury'].some(k => j.nome.toLowerCase().includes(k))
-            ).length;
-            document.getElementById('stats').textContent = `${lista.length} jogo(s) • BIOS: ${neogeoBIOS ? '✅' : '❌'}`;
-            document.getElementById('gameGrid').innerHTML = lista.map(j => `
-                <div class="game-card" onclick="iniciarJogo('${j.arquivo}')">
-                    <div class="game-icon">🕹️</div>
-                    <div>${j.nome}</div>
-                </div>
-            `).join('');
-        }
-
-        function filtrarJogos() {
-            const busca = document.getElementById('search').value.toLowerCase();
-            mostrarJogos(jogos.filter(j => j.nome.toLowerCase().includes(busca)));
-        }
-
-        function iniciarJogo(arquivo) {
-            document.getElementById('game-container').style.display = 'block';
-            document.getElementById('close-loading').style.display = 'block';
-            
-            const nomeJogo = arquivo.toLowerCase();
-            const isNeoGeo = ['kof', 'mslug', 'samsho', 'garou', 'rbff', 'fatfury', 'lastblad', 'metal'].some(k => nomeJogo.includes(k));
-            
-            window.EJS_player = "#game";
-            window.EJS_core = "fbneo";
-            window.EJS_gameUrl = ROMS_BASE + arquivo;
-            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
-            window.EJS_startOnLoaded = true;
-            
-            // Adicionar BIOS se for NeoGeo
-            if (isNeoGeo && neogeoBIOS) {
-                window.EJS_biosUrl = neogeoBIOS;
-                console.log('🎮 Usando BIOS:', neogeoBIOS);
-            }
-            
-            setTimeout(() => {
-                document.getElementById('close-loading').style.display = 'none';
-            }, 10000);
-            
-            const script = document.createElement('script');
-            script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
-            document.body.appendChild(script);
-        }
-
-        function fecharLoading() {
-            document.getElementById('close-loading').style.display = 'none';
-        }
-
-        function voltar() { location.reload(); }
-        carregarJogos();
-    </script>
 </body>
 </html>
