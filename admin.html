@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Admin - Gerenciador de Arquivos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0a; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #00ff88; text-align: center; margin-bottom: 30px; }
+        .config-box { background: #1a1a2e; border: 2px solid #00ff88; padding: 20px; border-radius: 12px; margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .config-box label { display: block; margin-bottom: 10px; color: #00ff88; font-weight: bold; }
+        .config-box input { width: 100%; padding: 10px; background: #0a0a0a; border: 2px solid #333; color: #fff; border-radius: 6px; margin-bottom: 15px; }
+        .config-box button { width: 100%; padding: 12px; background: #00ff88; color: #000; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .config-box button:hover { background: #00cc6a; }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+        .toolbar button { padding: 10px 20px; background: #1a1a2e; color: #fff; border: 2px solid #333; border-radius: 6px; cursor: pointer; }
+        .toolbar button:hover { border-color: #00ff88; }
+        .file-list { max-width: 1200px; margin: 0 auto; }
+        .folder { background: #1a1a2e; border: 2px solid #333; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+        .folder-header { padding: 15px; background: #16213e; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .folder-header:hover { background: #1e2d4a; }
+        .folder-content { padding: 15px; display: none; }
+        .folder-content.active { display: block; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0a0a0a; border-radius: 6px; margin-bottom: 8px; }
+        .file-item:hover { background: #1a1a2e; }
+        .file-name { flex: 1; }
+        .file-size { color: #888; margin-right: 15px; }
+        .file-actions { display: flex; gap: 8px; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-delete { background: #ff0000; color: #fff; }
+        .btn-delete:hover { background: #cc0000; }
+        .btn-move { background: #0088ff; color: #fff; }
+        .btn-move:hover { background: #0066cc; }
+        .upload-area { border: 3px dashed #00ff88; border-radius: 12px; padding: 40px; text-align: center; margin-bottom: 30px; cursor: pointer; transition: 0.3s; }
+        .upload-area:hover { background: rgba(0,255,136,0.1); }
+        .upload-area.dragover { background: rgba(0,255,136,0.2); border-color: #00cc6a; }
+        .status { position: fixed; bottom: 20px; right: 20px; background: #00ff88; color: #000; padding: 15px 25px; border-radius: 8px; display: none; z-index: 1000; font-weight: bold; }
+        .status.error { background: #ff0000; color: #fff; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #1a1a2e; padding: 30px; border-radius: 12px; border: 2px solid #00ff88; min-width: 400px; }
+        .modal-content h3 { color: #00ff88; margin-bottom: 20px; }
+        .modal-content input { width: 100%; padding: 10px; background: #0a0a0a; border: 2px solid #333; color: #fff; border-radius: 6px; margin-bottom: 15px; }
+        .modal-buttons { display: flex; gap: 10px; }
+        .modal-buttons button { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-confirm { background: #00ff88; color: #000; }
+        .btn-cancel { background: #333; color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Admin - Gerenciador de Arquivos</h1>
+    
+    <div class="config-box" id="configBox">
+        <label>🔑 GitHub Personal Access Token:</label>
+        <input type="password" id="token" placeholder="Cole seu NOVO token aqui...">
+        <label>📦 Repositório:</label>
+        <input type="text" id="repo" value="Vdmtx/retroarchonline">
+        <label>🌿 Branch:</label>
+        <input type="text" id="branch" value="main">
+        <button onclick="salvarConfig()">✅ Conectar</button>
+    </div>
+
+    <div id="adminPanel" style="display:none;">
+        <div class="toolbar">
+            <button onclick="carregarArquivos()">🔄 Atualizar</button>
+            <button onclick="document.getElementById('fileInput').click()">📤 Upload</button>
+            <button onclick="criarPasta()">📁 Nova Pasta</button>
+            <input type="file" id="fileInput" multiple style="display:none;" onchange="uploadArquivos(event)">
+        </div>
+
+        <div class="upload-area" id="uploadArea" ondrop="dropHandler(event)" ondragover="dragOverHandler(event)" ondragleave="dragLeaveHandler(event)">
+            <h2>📤 Arraste arquivos aqui para upload</h2>
+            <p>Ou clique no botão "Upload" acima</p>
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="modal" id="moveModal">
+        <div class="modal-content">
+            <h3>📁 Mover Arquivo</h3>
+            <input type="text" id="movePath" placeholder="Novo caminho (ex: roms/neogeo/)">
+            <div class="modal-buttons">
+                <button class="btn-confirm" onclick="confirmarMovimento()">Mover</button>
+                <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let config = { token: '', repo: '', branch: '' };
+        let arquivosAtuais = [];
+        let arquivoParaMover = null;
+
+        function salvarConfig() {
+            config.token = document.getElementById('token').value;
+            config.repo = document.getElementById('repo').value;
+            config.branch = document.getElementById('branch').value;
+            
+            if (!config.token) {
+                mostrarStatus('❌ Token é obrigatório!', true);
+                return;
+            }
+            
+            localStorage.setItem('githubConfig', JSON.stringify(config));
+            document.getElementById('configBox').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            carregarArquivos();
+            mostrarStatus('✅ Conectado!');
+        }
+
+        async function carregarArquivos() {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${config.repo}/git/trees/${config.branch}?recursive=1`, {
+                    headers: { 'Authorization': `token ${config.token}` }
+                });
+                const data = await response.json();
+                
+                arquivosAtuais = data.tree.filter(item => item.type === 'blob');
+                renderizarArquivos();
+                mostrarStatus(`✅ ${arquivosAtuais.length} arquivos carregados`);
+            } catch (e) {
+                mostrarStatus('❌ Erro ao carregar: ' + e.message, true);
+            }
+        }
+
+        function renderizarArquivos() {
+            const pastas = {};
+            arquivosAtuais.forEach(arquivo => {
+                const path = arquivo.path;
+                const parts = path.split('/');
+                const pasta = parts.slice(0, -1).join('/') || 'root';
+                
+                if (!pastas[pasta]) pastas[pasta] = [];
+                pastas[pasta].push(arquivo);
+            });
+
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = Object.keys(pastas).sort().map(pasta => `
+                <div class="folder">
+                    <div class="folder-header" onclick="toggleFolder('${pasta}')">
+                        <span>📁 ${pasta} (${pastas[pasta].length} arquivos)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="folder-content" id="folder-${pasta.replace(/\//g, '-')}">
+                        ${pastas[pasta].map(arquivo => `
+                            <div class="file-item">
+                                <span class="file-name">${arquivo.path.split('/').pop()}</span>
+                                <span class="file-size">${(arquivo.size/1024/1024).toFixed(2)} MB</span>
+                                <div class="file-actions">
+                                    <button class="btn btn-move" onclick="abrirModalMover('${arquivo.path}')">Mover</button>
+                                    <button class="btn btn-delete" onclick="deletarArquivo('${arquivo.path}', '${arquivo.sha}')">Deletar</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleFolder(pasta) {
+            const folderId = 'folder-' + pasta.replace(/\//g, '-');
+            const folder = document.getElementById(folderId);
+            folder.classList.toggle('active');
+        }
+
+        async function uploadArquivos(event) {
+            const files = event.target.files;
+            for (const file of files) {
+                await uploadArquivo(file);
+            }
+        }
+
+        async function uploadArquivo(file) {
+            mostrarStatus(`📤 Upload: ${file.name}...`);
+            
+            try {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const content = btoa(String.fromCharCode(...new Uint8Array(e.target.result)));
+                    
+                    const response = await fetch(`https://api.github.com/repos/${config.repo}/contents/${file.name}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${config.token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `Upload ${file.name}`,
+                            content: content,
+                            branch: config.branch
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        mostrarStatus(`✅ ${file.name} enviado!`);
+                        carregarArquivos();
+                    } else {
+                        const error = await response.json();
+                        mostrarStatus(`❌ Erro: ${error.message}`, true);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } catch (e) {
+                mostrarStatus(`❌ Erro: ${e.message}`, true);
+            }
+        }
+
+        async function deletarArquivo(path, sha) {
+            if (!confirm(`Deletar ${path}?`)) return;
+            
+            try {
+                const response = await fetch(`https://api.github.com/repos/${config.repo}/contents/${path}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `token ${config.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Delete ${path}`,
+                        sha: sha,
+                        branch: config.branch
+                    })
+                });
+                
+                if (response.ok) {
+                    mostrarStatus(`✅ ${path} deletado!`);
+                    carregarArquivos();
+                } else {
+                    mostrarStatus('❌ Erro ao deletar', true);
+                }
+            } catch (e) {
+                mostrarStatus(`❌ Erro: ${e.message}`, true);
+            }
+        }
+
+        function abrirModalMover(path) {
+            arquivoParaMover = path;
+            document.getElementById('movePath').value = path.substring(0, path.lastIndexOf('/') + 1);
+            document.getElementById('moveModal').classList.add('active');
+        }
+
+        async function confirmarMovimento() {
+            const novoPath = document.getElementById('movePath').value;
+            if (!novoPath) return;
+            
+            const arquivo = arquivosAtuais.find(a => a.path === arquivoParaMover);
+            if (!arquivo) return;
+            
+            try {
+                const downloadResponse = await fetch(`https://api.github.com/repos/${config.repo}/contents/${arquivoParaMover}`, {
+                    headers: { 'Authorization': `token ${config.token}` }
+                });
+                const downloadData = await downloadResponse.json();
+                
+                const uploadResponse = await fetch(`https://api.github.com/repos/${config.repo}/contents/${novoPath}${arquivoParaMover.split('/').pop()}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${config.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Move ${arquivoParaMover}`,
+                        content: downloadData.content,
+                        branch: config.branch
+                    })
+                });
+                
+                if (uploadResponse.ok) {
+                    await deletarArquivo(arquivoParaMover, arquivo.sha);
+                    mostrarStatus(`✅ Movido para ${novoPath}`);
+                    fecharModal();
+                } else {
+                    mostrarStatus('❌ Erro ao mover', true);
+                }
+            } catch (e) {
+                mostrarStatus(`❌ Erro: ${e.message}`, true);
+            }
+        }
+
+        function fecharModal() {
+            document.getElementById('moveModal').classList.remove('active');
+        }
+
+        function criarPasta() {
+            const nome = prompt('Nome da pasta:');
+            if (!nome) return;
+            
+            const path = `${nome}/.gitkeep`;
+            const content = btoa('');
+            
+            fetch(`https://api.github.com/repos/${config.repo}/contents/${path}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${config.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Create folder ${nome}`,
+                    content: content,
+                    branch: config.branch
+                })
+            }).then(response => {
+                if (response.ok) {
+                    mostrarStatus(`✅ Pasta ${nome} criada!`);
+                    carregarArquivos();
+                }
+            });
+        }
+
+        function dragOverHandler(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.add('dragover');
+        }
+
+        function dragLeaveHandler(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.remove('dragover');
+        }
+
+        function dropHandler(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            for (const file of files) {
+                uploadArquivo(file);
+            }
+        }
+
+        function mostrarStatus(msg, erro = false) {
+            const status = document.getElementById('status');
+            status.textContent = msg;
+            status.className = 'status' + (erro ? ' error' : '');
+            status.style.display = 'block';
+            setTimeout(() => { status.style.display = 'none'; }, 3000);
+        }
+
+        const savedConfig = localStorage.getItem('githubConfig');
+        if (savedConfig) {
+            config = JSON.parse(savedConfig);
+            document.getElementById('token').value = config.token;
+        }
+    </script>
+</body>
+</html>
