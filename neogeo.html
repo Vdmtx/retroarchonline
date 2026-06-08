@@ -26,7 +26,7 @@
 <body>
     <h1>🔥 NEO GEO</h1>
     <div class="back-link"><a href="index.html">← Voltar ao Menu</a></div>
-    <div class="warning">⚠️ Versão 5.x • Testando BIOS...</div>
+    <div class="warning">⚠️ Testando BIOS automaticamente...</div>
     <div class="search-box"><input type="text" id="search" placeholder=" Buscar jogos..." oninput="filtrarJogos()"></div>
     <div class="stats" id="stats"></div>
     <div class="game-grid" id="gameGrid"></div>
@@ -38,9 +38,8 @@
     <script>
         const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/neogeo/';
         const BIOS_BASE = 'https://vdmtx.github.io/retroarchonline/bios/';
-        // FORÇAR VERSÃO 5.x DO EMULATORJS
-        const EJS_VERSION = 'stable'; 
-        const EJS_PATH = `https://cdn.emulatorjs.org/${EJS_VERSION}/data/`;
+        // USAR "latest" QUE FUNCIONA
+        const EJS_PATH = 'https://cdn.emulatorjs.org/latest/data/';
         
         let jogos = [];
         let neogeoBIOS = null;
@@ -113,7 +112,7 @@
             });
             document.getElementById('game').innerHTML = '';
             
-            // Configurações para EmulatorJS 5.x
+            // Configurações (iguais ao Capcom que funciona)
             window.EJS_player = "#game";
             window.EJS_core = "fbneo";
             window.EJS_gameUrl = ROMS_BASE + arquivo;
@@ -124,7 +123,6 @@
             window.EJS_fullscreenOnLoaded = false;
             window.EJS_disableDatabases = true;
             window.EJS_disableLocalStorage = true;
-            window.EJS_threads = false; // Desativar threads para compatibilidade
             
             // Adicionar BIOS
             if (neogeoBIOS) {
@@ -141,14 +139,14 @@
                 console.log('🎮 Jogo iniciado!');
             };
             
-            // Carregar EmulatorJS 5.x
+            // Carregar (mesmo loader do Capcom)
             const script = document.createElement('script');
             script.src = EJS_PATH + "loader.js";
             document.body.appendChild(script);
             
             console.log('🎮 Carregando:', arquivo);
             console.log('📁 ROM:', ROMS_BASE + arquivo);
-            console.log(' EmulatorJS:', EJS_VERSION);
+            console.log('💾 BIOS:', neogeoBIOS || 'Nenhuma');
         }
 
         function voltar() { location.reload(); }
