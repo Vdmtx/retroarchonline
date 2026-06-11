@@ -18,13 +18,15 @@
         .toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
         .toolbar button { padding: 10px 20px; background: #1a1a2e; color: #fff; border: 2px solid #333; border-radius: 6px; cursor: pointer; }
         .toolbar button:hover { border-color: #00ff88; }
-        .toolbar button.active { background: #00ff88; color: #000; }
         .file-list { max-width: 1200px; margin: 0 auto; }
         .folder { background: #1a1a2e; border: 2px solid #333; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
         .folder-header { padding: 15px; background: #16213e; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .folder-header:hover { background: #1e2d4a; }
         .folder-content { padding: 15px; display: none; }
         .folder-content.active { display: block; }
+        .folder-toolbar { display: flex; gap: 10px; margin-bottom: 10px; padding: 10px; background: #0a0a0a; border-radius: 6px; }
+        .folder-toolbar button { padding: 6px 12px; background: #1a1a2e; color: #fff; border: 2px solid #333; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .folder-toolbar button:hover { border-color: #00ff88; }
         .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0a0a0a; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid transparent; }
         .file-item:hover { background: #1a1a2e; }
         .file-item.verified { border-left-color: #00ff88; }
@@ -58,29 +60,8 @@
         .btn-cancel { background: #333; color: #fff; }
         .token-info { background: #ff880022; border: 2px solid #ff8800; padding: 15px; border-radius: 8px; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto; color: #ffaa00; font-size: 14px; }
         .help-text { color: #888; font-size: 12px; margin-top: 5px; }
-        
-        /* Log de Atividades */
-        .activity-log { background: #1a1a2e; border: 2px solid #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; max-width: 1200px; margin-left: auto; margin-right: auto; }
-        .activity-log h3 { color: #00ff88; margin-bottom: 15px; }
-        .log-entry { padding: 8px; background: #0a0a0a; border-radius: 4px; margin-bottom: 5px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
-        .log-entry.success { border-left: 3px solid #00ff88; }
-        .log-entry.error { border-left: 3px solid #ff0000; }
-        .log-entry.warning { border-left: 3px solid #ff8800; }
-        .log-time { color: #666; font-size: 11px; }
-        
-        /* Relatório de Verificação */
-        .verification-report { background: #1a1a2e; border: 2px solid #0088ff; border-radius: 8px; padding: 20px; margin-bottom: 20px; max-width: 1200px; margin-left: auto; margin-right: auto; display: none; }
-        .verification-report.active { display: block; }
-        .verification-report h3 { color: #0088ff; margin-bottom: 15px; }
-        .report-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-box { background: #0a0a0a; padding: 15px; border-radius: 6px; text-align: center; }
-        .stat-number { font-size: 32px; font-weight: bold; color: #00ff88; }
-        .stat-label { color: #888; font-size: 12px; margin-top: 5px; }
-        .stat-box.error .stat-number { color: #ff0000; }
-        .stat-box.warning .stat-number { color: #ff8800; }
-        
-        .progress-bar { width: 100%; height: 20px; background: #333; border-radius: 10px; overflow: hidden; margin: 10px 0; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00cc6a); transition: width 0.3s; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #000; }
+        .path-selector { background: #1a1a2e; border: 2px solid #0088ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .path-selector label { display: block; margin-bottom: 10px; color: #0088ff; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -101,36 +82,33 @@
     <div id="adminPanel" style="display:none;">
         <div class="token-info" id="tokenInfo"></div>
         
+        <!-- Upload Global com Seletor de Pasta -->
+        <div class="path-selector">
+            <label>📍 Pasta de Destino para Upload:</label>
+            <select id="uploadPath">
+                <option value="">Raiz (/)</option>
+                <option value="roms/">roms/</option>
+                <option value="roms/cps/">roms/cps/</option>
+                <option value="roms/midway/">roms/midway/</option>
+                <option value="roms/neogeo/">roms/neogeo/</option>
+                <option value="bios/">bios/</option>
+                <option value="data/">data/</option>
+                <option value="data/cores/">data/cores/</option>
+            </select>
+        </div>
+
         <div class="toolbar">
             <button onclick="carregarArquivos()">🔄 Atualizar</button>
-            <button onclick="document.getElementById('fileInput').click()">📤 Upload (até 70MB)</button>
+            <button onclick="document.getElementById('fileInput').click()">📤 Upload Global (70MB)</button>
             <button onclick="adicionarLinkExterno()">🔗 Link Externo</button>
             <button onclick="criarPasta()">📁 Nova Pasta</button>
             <button onclick="verificarTodos()" id="btnVerifyAll">✅ Verificar Todos</button>
-            <button onclick="toggleLog()">📋 Log</button>
-            <input type="file" id="fileInput" multiple style="display:none;" onchange="uploadArquivos(event)">
+            <input type="file" id="fileInput" multiple style="display:none;" onchange="uploadArquivosGlobal(event)">
         </div>
 
         <div class="upload-area" id="uploadArea" ondrop="dropHandler(event)" ondragover="dragOverHandler(event)" ondragleave="dragLeaveHandler(event)">
-            <h2> Arraste arquivos aqui para upload</h2>
-            <p>✅ Limite: 70MB | Arquivos maiores: Google Drive, MediaFire, Archive.org</p>
-        </div>
-
-        <!-- Relatório de Verificação -->
-        <div class="verification-report" id="verificationReport">
-            <h3>📊 Relatório de Verificação</h3>
-            <div class="report-stats" id="reportStats"></div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
-            </div>
-            <div id="verificationDetails"></div>
-        </div>
-
-        <!-- Log de Atividades -->
-        <div class="activity-log" id="activityLog" style="display:none;">
-            <h3> Log de Atividades</h3>
-            <div id="logEntries"></div>
-            <button onclick="limparLog()" style="margin-top: 10px; padding: 8px 16px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Limpar Log</button>
+            <h2>📤 Arraste arquivos aqui para upload</h2>
+            <p>✅ Limite: 70MB | Destino: <span id="currentUploadPath">Raiz</span></p>
         </div>
 
         <div class="file-list" id="fileList"></div>
@@ -161,12 +139,12 @@
                 <option value="custom">🔗 Outro/URL Direta</option>
             </select>
             
-            <label>Nome do Arquivo (ex: kof99.zip):</label>
+            <label>Nome do Arquivo:</label>
             <input type="text" id="linkName" placeholder="kof99.zip">
             
             <label>URL do Arquivo:</label>
             <input type="text" id="linkUrl" placeholder="https://archive.org/download/roms/kof99.zip">
-            <div class="help-text" id="linkHelp">Cole o link direto do Archive.org</div>
+            <div class="help-text" id="linkHelp">Cole o link direto</div>
             
             <label>Caminho no Repositório:</label>
             <input type="text" id="linkPath" placeholder="roms/neogeo/">
@@ -182,22 +160,17 @@
         let config = { token: '', repo: '', branch: '' };
         let arquivosAtuais = [];
         let arquivoParaMover = null;
-        let atividadeLog = [];
         let statusVerificacao = {};
-        const MAX_FILE_SIZE = 70 * 1024 * 1024;
+        let pastaUploadAtual = '';
+        const MAX_FILE_SIZE = 70 * 1024 * 1024; // 70MB
 
         function salvarConfig() {
             config.token = document.getElementById('token').value.trim();
             config.repo = document.getElementById('repo').value.trim();
             config.branch = document.getElementById('branch').value.trim();
             
-            if (!config.token) {
-                mostrarStatus('❌ Token é obrigatório!', true);
-                return;
-            }
-            
-            if (!config.token.startsWith('ghp_')) {
-                mostrarStatus('❌ Token inválido! Deve começar com ghp_', true);
+            if (!config.token || !config.token.startsWith('ghp_')) {
+                mostrarStatus('❌ Token inválido!', true);
                 return;
             }
             
@@ -214,34 +187,24 @@
                     headers: { 'Authorization': `token ${config.token}` }
                 });
                 
-                if (response.status === 401) {
-                    mostrarStatus('❌ Token inválido ou expirado!', true);
-                    document.getElementById('tokenInfo').textContent = '⚠️ Token inválido. Gere um novo em https://github.com/settings/tokens';
-                    return;
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('tokenInfo').textContent = `✅ Conectado: ${data.owner.login} | ${data.name}`;
+                    mostrarStatus('✅ Token válido!');
+                    carregarArquivos();
+                } else {
+                    mostrarStatus('❌ Token inválido!', true);
                 }
-                
-                if (response.status === 404) {
-                    mostrarStatus('❌ Repositório não encontrado!', true);
-                    return;
-                }
-                
-                const data = await response.json();
-                document.getElementById('tokenInfo').textContent = `✅ Conectado como: ${data.owner.login} | Repo: ${data.name}`;
-                mostrarStatus('✅ Token válido!');
-                carregarArquivos();
             } catch (e) {
                 mostrarStatus('❌ Erro: ' + e.message, true);
             }
         }
 
         async function carregarArquivos() {
-            mostrarStatus('🔄 Carregando arquivos...');
+            mostrarStatus('🔄 Carregando...');
             try {
                 const response = await fetch(`https://api.github.com/repos/${config.repo}/git/trees/${config.branch}?recursive=1`, {
-                    headers: { 
-                        'Authorization': `token ${config.token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
+                    headers: { 'Authorization': `token ${config.token}` }
                 });
                 
                 if (!response.ok) throw new Error('Erro na API');
@@ -249,11 +212,9 @@
                 const data = await response.json();
                 arquivosAtuais = data.tree.filter(item => item.type === 'blob');
                 renderizarArquivos();
-                mostrarStatus(`✅ ${arquivosAtuais.length} arquivos carregados`);
-                adicionarLog('info', `Carregados ${arquivosAtuais.length} arquivos do repositório`);
+                mostrarStatus(`✅ ${arquivosAtuais.length} arquivos`);
             } catch (e) {
                 mostrarStatus('❌ Erro: ' + e.message, true);
-                adicionarLog('error', `Erro ao carregar: ${e.message}`);
             }
         }
 
@@ -269,19 +230,25 @@
             });
 
             const fileList = document.getElementById('fileList');
-            fileList.innerHTML = Object.keys(pastas).sort().map(pasta => `
+            fileList.innerHTML = Object.keys(pastas).sort().map(pasta => {
+                const pastaPath = pasta === 'root' ? '' : pasta + '/';
+                return `
                 <div class="folder">
                     <div class="folder-header" onclick="toggleFolder('${pasta}')">
                         <span>📁 ${pasta} (${pastas[pasta].length} arquivos)</span>
                         <span>▼</span>
                     </div>
                     <div class="folder-content" id="folder-${pasta.replace(/\//g, '-')}">
+                        <div class="folder-toolbar">
+                            <button onclick="document.getElementById('folderFileInput-${pasta.replace(/\//g, '-')}').click()">📤 Upload nesta pasta</button>
+                            <button onclick="document.getElementById('linkPath').value='${pastaPath}'; adicionarLinkExterno()">🔗 Link aqui</button>
+                            <input type="file" id="folderFileInput-${pasta.replace(/\//g, '-')}" multiple style="display:none;" onchange="uploadArquivosPasta(event, '${pastaPath}')">
+                        </div>
                         ${pastas[pasta].map(arquivo => {
                             const status = statusVerificacao[arquivo.path] || 'pending';
                             const statusIcon = status === 'verified' ? '✅' : status === 'failed' ? '❌' : '⏳';
-                            const statusClass = status;
                             return `
-                                <div class="file-item ${statusClass}">
+                                <div class="file-item ${status}">
                                     <span class="file-name">
                                         <span class="file-status">${statusIcon}</span>
                                         ${arquivo.path.split('/').pop()}
@@ -297,30 +264,48 @@
                         }).join('')}
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function toggleFolder(pasta) {
-            const folderId = 'folder-' + pasta.replace(/\//g, '-');
-            document.getElementById(folderId).classList.toggle('active');
+            document.getElementById('folder-' + pasta.replace(/\//g, '-')).classList.toggle('active');
         }
 
-        async function uploadArquivos(event) {
+        // Upload Global (com pasta selecionada)
+        async function uploadArquivosGlobal(event) {
+            const pastaDestino = document.getElementById('uploadPath').value;
             const files = Array.from(event.target.files).filter(f => {
                 if (f.size > MAX_FILE_SIZE) {
-                    mostrarStatus(`❌ ${f.name} >70MB. Use link externo.`, true);
-                    adicionarLog('error', `${f.name} excede 70MB`);
+                    mostrarStatus(`❌ ${f.name} >70MB!`, true);
                     return false;
                 }
                 return true;
             });
             
-            for (const file of files) await uploadArquivo(file);
+            for (const file of files) {
+                await uploadArquivo(file, pastaDestino);
+            }
         }
 
-        async function uploadArquivo(file) {
-            mostrarStatus(`📤 ${file.name}...`);
-            adicionarLog('info', `Iniciando upload: ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)`);
+        // Upload Específico de Pasta
+        async function uploadArquivosPasta(event, pastaDestino) {
+            const files = Array.from(event.target.files).filter(f => {
+                if (f.size > MAX_FILE_SIZE) {
+                    mostrarStatus(`❌ ${f.name} >70MB!`, true);
+                    return false;
+                }
+                return true;
+            });
+            
+            for (const file of files) {
+                await uploadArquivo(file, pastaDestino);
+            }
+        }
+
+        // Função genérica de upload
+        async function uploadArquivo(file, pastaDestino = '') {
+            const fullPath = pastaDestino ? pastaDestino + file.name : file.name;
+            mostrarStatus(`📤 ${fullPath}...`);
             
             try {
                 const buffer = await file.arrayBuffer();
@@ -329,12 +314,11 @@
                 for (let i = 0; i < uint8.byteLength; i++) binary += String.fromCharCode(uint8[i]);
                 const content = btoa(binary);
                 
-                const response = await fetch(`https://api.github.com/repos/${config.repo}/contents/${file.name}`, {
+                const response = await fetch(`https://api.github.com/repos/${config.repo}/contents/${fullPath}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `token ${config.token}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         message: `Upload: ${file.name}`,
@@ -344,52 +328,38 @@
                 });
                 
                 if (response.ok) {
-                    mostrarStatus(`✅ ${file.name} enviado!`);
-                    adicionarLog('success', `Upload concluído: ${file.name}`);
-                    await verificarArquivo(file.name, null, true);
+                    mostrarStatus(`✅ ${fullPath} enviado!`);
+                    await verificarArquivo(fullPath, null, true);
                     carregarArquivos();
                 } else {
                     const err = await response.json();
                     throw new Error(err.message);
                 }
             } catch (e) {
-                mostrarStatus(`❌ ${file.name}: ${e.message}`, true);
-                adicionarLog('error', `Falha no upload: ${file.name} - ${e.message}`);
+                mostrarStatus(`❌ ${fullPath}: ${e.message}`, true);
             }
         }
 
         async function verificarArquivo(path, sha, isNew = false) {
             mostrarStatus(`🔍 Verificando ${path}...`);
-            adicionarLog('info', `Verificando: ${path}`);
             
             try {
                 const response = await fetch(`https://api.github.com/repos/${config.repo}/contents/${path}`, {
-                    headers: { 
-                        'Authorization': `token ${config.token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
+                    headers: { 'Authorization': `token ${config.token}` }
                 });
                 
                 if (response.ok) {
-                    const data = await response.json();
                     statusVerificacao[path] = 'verified';
-                    mostrarStatus(`✅ ${path} verificado!`, false);
-                    adicionarLog('success', `Verificado: ${path} (${(data.size/1024/1024).toFixed(2)}MB)`);
-                    
-                    if (sha && data.sha !== sha) {
-                        adicionarLog('warning', `SHA diferente para ${path} - pode ter sido modificado`);
-                    }
+                    mostrarStatus(`✅ ${path} verificado!`);
                 } else {
                     statusVerificacao[path] = 'failed';
                     mostrarStatus(`❌ ${path} não encontrado!`, true);
-                    adicionarLog('error', `Falha na verificação: ${path}`);
                 }
                 
                 renderizarArquivos();
             } catch (e) {
                 statusVerificacao[path] = 'failed';
-                mostrarStatus(`❌ Erro ao verificar: ${e.message}`, true);
-                adicionarLog('error', `Erro na verificação: ${path} - ${e.message}`);
+                mostrarStatus(`❌ Erro: ${e.message}`, true);
                 renderizarArquivos();
             }
         }
@@ -397,114 +367,27 @@
         async function verificarTodos() {
             const btn = document.getElementById('btnVerifyAll');
             btn.disabled = true;
-            btn.textContent = '⏳ Verificando...';
-            
-            const report = document.getElementById('verificationReport');
-            report.classList.add('active');
-            
-            let verificados = 0;
-            let falhas = 0;
-            let pendentes = 0;
-            const total = arquivosAtuais.length;
-            
-            document.getElementById('reportStats').innerHTML = `
-                <div class="stat-box">
-                    <div class="stat-number">${total}</div>
-                    <div class="stat-label">Total</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="statVerified">0</div>
-                    <div class="stat-label">Verificados</div>
-                </div>
-                <div class="stat-box warning">
-                    <div class="stat-number" id="statPending">0</div>
-                    <div class="stat-label">Pendentes</div>
-                </div>
-                <div class="stat-box error">
-                    <div class="stat-number" id="statFailed">0</div>
-                    <div class="stat-label">Falhas</div>
-                </div>
-            `;
             
             for (let i = 0; i < arquivosAtuais.length; i++) {
-                const arquivo = arquivosAtuais[i];
-                const progresso = ((i + 1) / total) * 100;
-                document.getElementById('progressFill').style.width = `${progresso}%`;
-                document.getElementById('progressFill').textContent = `${Math.round(progresso)}%`;
-                
-                try {
-                    const response = await fetch(`https://api.github.com/repos/${config.repo}/contents/${arquivo.path}`, {
-                        headers: { 
-                            'Authorization': `token ${config.token}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        statusVerificacao[arquivo.path] = 'verified';
-                        verificados++;
-                    } else {
-                        statusVerificacao[arquivo.path] = 'failed';
-                        falhas++;
-                    }
-                } catch (e) {
-                    statusVerificacao[arquivo.path] = 'failed';
-                    falhas++;
-                }
-                
-                document.getElementById('statVerified').textContent = verificados;
-                document.getElementById('statPending').textContent = pendentes;
-                document.getElementById('statFailed').textContent = falhas;
-                
-                renderizarArquivos();
-                
-                // Delay para não sobrecarregar a API
+                await verificarArquivo(arquivosAtuais[i].path, arquivosAtuais[i].sha);
                 if (i % 10 === 0) await new Promise(r => setTimeout(r, 100));
             }
             
             btn.disabled = false;
-            btn.textContent = '✅ Verificar Todos';
-            
-            adicionarLog('success', `Verificação completa: ${verificados} OK, ${falhas} falhas`);
-            mostrarStatus(`✅ Verificação completa! ${verificados}/${total} verificados`, falhas > 0);
         }
 
         function atualizarPlaceholderLink() {
             const service = document.getElementById('linkService').value;
-            const helpText = document.getElementById('linkHelp');
-            const urlInput = document.getElementById('linkUrl');
-            
             const examples = {
                 archive: 'https://archive.org/download/roms/kof99.zip',
                 gdrive: 'https://drive.google.com/file/d/FILE_ID/view',
                 mediafire: 'https://www.mediafire.com/file/FILE_ID/kof99.zip',
                 custom: 'https://exemplo.com/arquivo.zip'
             };
-            
-            const helps = {
-                archive: 'Cole o link direto do Archive.org',
-                gdrive: 'Cole o link de compartilhamento do Google Drive',
-                mediafire: 'Cole o link do MediaFire',
-                custom: 'Cole a URL direta do arquivo'
-            };
-            
-            urlInput.placeholder = examples[service];
-            helpText.textContent = helps[service];
-        }
-
-        function converterParaLinkDireto(url, service) {
-            if (service === 'gdrive') {
-                const fileIdMatch = url.match(/\/d\/([^/]+)/);
-                if (fileIdMatch) {
-                    const fileId = fileIdMatch[1];
-                    return `https://drive.google.com/uc?export=download&id=${fileId}`;
-                }
-            }
-            return url;
+            document.getElementById('linkUrl').placeholder = examples[service];
         }
 
         function adicionarLinkExterno() {
-            atualizarPlaceholderLink();
             document.getElementById('linkModal').classList.add('active');
         }
 
@@ -513,7 +396,6 @@
         }
 
         async function confirmarLinkExterno() {
-            const service = document.getElementById('linkService').value;
             const name = document.getElementById('linkName').value.trim();
             const url = document.getElementById('linkUrl').value.trim();
             const path = document.getElementById('linkPath').value.trim();
@@ -523,84 +405,53 @@
                 return;
             }
             
-            const directUrl = converterParaLinkDireto(url, service);
             const fullPath = path.endsWith('/') ? path + name : path + '/' + name;
-            
-            const linkData = {
-                url: directUrl,
-                originalUrl: url,
-                type: 'external_link',
-                service: service,
-                added: new Date().toISOString()
-            };
-            
-            const content = btoa(JSON.stringify(linkData, null, 2));
+            const content = btoa(JSON.stringify({ url, type: 'external_link' }));
             
             try {
                 const response = await fetch(`https://api.github.com/repos/${config.repo}/contents/${fullPath}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `token ${config.token}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: `Add ${service} link: ${name}`,
-                        content: content,
+                        message: `Add link: ${name}`,
+                        content,
                         branch: config.branch
                     })
                 });
                 
                 if (response.ok) {
-                    mostrarStatus(`✅ Link ${service} adicionado: ${name}`);
-                    adicionarLog('success', `Link externo adicionado: ${name} (${service})`);
+                    mostrarStatus(`✅ Link adicionado: ${fullPath}`);
                     fecharLinkModal();
-                    await verificarArquivo(fullPath, null, true);
                     carregarArquivos();
-                } else {
-                    const err = await response.json();
-                    throw new Error(err.message);
                 }
             } catch (e) {
                 mostrarStatus(`❌ Erro: ${e.message}`, true);
-                adicionarLog('error', `Falha ao adicionar link: ${name} - ${e.message}`);
             }
         }
 
         async function deletarArquivo(path, sha) {
             if (!confirm(`Deletar ${path}?`)) return;
             
-            mostrarStatus(`🗑️ Deletando ${path}...`);
-            adicionarLog('info', `Deletando: ${path}`);
-            
             try {
                 const response = await fetch(`https://api.github.com/repos/${config.repo}/contents/${path}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `token ${config.token}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        message: `Delete ${path}`,
-                        sha: sha,
-                        branch: config.branch
-                    })
+                    body: JSON.stringify({ message: `Delete ${path}`, sha, branch: config.branch })
                 });
                 
                 if (response.ok) {
                     mostrarStatus(`✅ ${path} deletado!`);
-                    adicionarLog('success', `Deletado: ${path}`);
                     delete statusVerificacao[path];
                     carregarArquivos();
-                } else {
-                    const error = await response.json();
-                    mostrarStatus(`❌ Erro: ${error.message}`, true);
-                    adicionarLog('error', `Falha ao deletar: ${path} - ${error.message}`);
                 }
             } catch (e) {
                 mostrarStatus(`❌ Erro: ${e.message}`, true);
-                adicionarLog('error', `Erro ao deletar: ${path} - ${e.message}`);
             }
         }
 
@@ -612,69 +463,42 @@
 
         async function confirmarMovimento() {
             const novoPath = document.getElementById('movePath').value.trim();
-            if (!novoPath) {
-                mostrarStatus('❌ Caminho vazio!', true);
-                return;
-            }
+            if (!novoPath || !arquivoParaMover) return;
             
             const arquivo = arquivosAtuais.find(a => a.path === arquivoParaMover);
-            if (!arquivo) {
-                mostrarStatus('❌ Arquivo não encontrado!', true);
-                return;
-            }
-            
-            mostrarStatus(`📁 Movendo...`);
-            adicionarLog('info', `Movendo: ${arquivoParaMover} para ${novoPath}`);
+            if (!arquivo) return;
             
             try {
-                const downloadResponse = await fetch(`https://api.github.com/repos/${config.repo}/contents/${arquivoParaMover}`, {
-                    headers: { 
-                        'Authorization': `token ${config.token}`,
-                        'Accept': 'application/vnd.github.v3.raw'
-                    }
+                const download = await fetch(`https://api.github.com/repos/${config.repo}/contents/${arquivoParaMover}`, {
+                    headers: { 'Authorization': `token ${config.token}` }
                 });
                 
-                if (!downloadResponse.ok) throw new Error('Erro ao baixar');
-                
-                const blob = await downloadResponse.blob();
-                const arrayBuffer = await blob.arrayBuffer();
-                const uint8Array = new Uint8Array(arrayBuffer);
+                const blob = await download.blob();
+                const buffer = await blob.arrayBuffer();
+                const uint8 = new Uint8Array(buffer);
                 let binary = '';
-                for (let i = 0; i < uint8Array.byteLength; i++) {
-                    binary += String.fromCharCode(uint8Array[i]);
-                }
+                for (let i = 0; i < uint8.byteLength; i++) binary += String.fromCharCode(uint8[i]);
                 const content = btoa(binary);
                 
                 const fileName = arquivoParaMover.split('/').pop();
                 const novoCaminho = novoPath.endsWith('/') ? novoPath + fileName : novoPath + '/' + fileName;
                 
-                const uploadResponse = await fetch(`https://api.github.com/repos/${config.repo}/contents/${novoCaminho}`, {
+                const upload = await fetch(`https://api.github.com/repos/${config.repo}/contents/${novoCaminho}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `token ${config.token}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        message: `Move ${arquivoParaMover}`,
-                        content: content,
-                        branch: config.branch
-                    })
+                    body: JSON.stringify({ message: `Move ${arquivoParaMover}`, content, branch: config.branch })
                 });
                 
-                if (uploadResponse.ok) {
+                if (upload.ok) {
                     await deletarArquivo(arquivoParaMover, arquivo.sha);
-                    mostrarStatus(`✅ Movido!`);
-                    adicionarLog('success', `Movido: ${arquivoParaMover} → ${novoCaminho}`);
-                    fecharModal();
-                } else {
-                    const error = await uploadResponse.json();
-                    mostrarStatus(`❌ Erro: ${error.message}`, true);
-                    adicionarLog('error', `Falha ao mover: ${arquivoParaMover} - ${error.message}`);
+                    mostrarStatus(`✅ Movido para ${novoCaminho}`);
+                    document.getElementById('moveModal').classList.remove('active');
                 }
             } catch (e) {
                 mostrarStatus(`❌ Erro: ${e.message}`, true);
-                adicionarLog('error', `Erro ao mover: ${arquivoParaMover} - ${e.message}`);
             }
         }
 
@@ -686,31 +510,17 @@
             const nome = prompt('Nome da pasta (ex: roms/teste):');
             if (!nome) return;
             
-            const path = `${nome}/.gitkeep`;
-            const content = btoa('');
-            
-            fetch(`https://api.github.com/repos/${config.repo}/contents/${path}`, {
+            fetch(`https://api.github.com/repos/${config.repo}/contents/${nome}/.gitkeep`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `token ${config.token}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/vnd.github.v3+json'
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    message: `Create folder ${nome}`,
-                    content: content,
-                    branch: config.branch
-                })
-            }).then(response => {
-                if (response.ok) {
+                body: JSON.stringify({ message: `Create ${nome}`, content: btoa(''), branch: config.branch })
+            }).then(r => {
+                if (r.ok) {
                     mostrarStatus(`✅ Pasta ${nome} criada!`);
-                    adicionarLog('success', `Pasta criada: ${nome}`);
                     carregarArquivos();
-                } else {
-                    response.json().then(e => {
-                        mostrarStatus(`❌ Erro: ${e.message}`, true);
-                        adicionarLog('error', `Falha ao criar pasta: ${nome}`);
-                    });
                 }
             });
         }
@@ -729,48 +539,16 @@
             e.preventDefault();
             document.getElementById('uploadArea').classList.remove('dragover');
             
+            const pastaDestino = document.getElementById('uploadPath').value;
             const files = Array.from(e.dataTransfer.files).filter(f => {
                 if (f.size > MAX_FILE_SIZE) {
                     mostrarStatus(`❌ ${f.name} >70MB!`, true);
-                    adicionarLog('error', `${f.name} excede 70MB`);
                     return false;
                 }
                 return true;
             });
             
-            files.forEach(f => uploadArquivo(f));
-        }
-
-        function adicionarLog(tipo, mensagem) {
-            const agora = new Date();
-            const timestamp = agora.toLocaleTimeString('pt-BR');
-            atividadeLog.unshift({ tipo, mensagem, timestamp });
-            
-            if (atividadeLog.length > 100) atividadeLog.pop();
-            
-            renderizarLog();
-        }
-
-        function renderizarLog() {
-            const logEntries = document.getElementById('logEntries');
-            if (!logEntries) return;
-            
-            logEntries.innerHTML = atividadeLog.map(entry => `
-                <div class="log-entry ${entry.tipo}">
-                    <span>${entry.mensagem}</span>
-                    <span class="log-time">${entry.timestamp}</span>
-                </div>
-            `).join('');
-        }
-
-        function toggleLog() {
-            const log = document.getElementById('activityLog');
-            log.style.display = log.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function limparLog() {
-            atividadeLog = [];
-            renderizarLog();
+            files.forEach(f => uploadArquivo(f, pastaDestino));
         }
 
         function mostrarStatus(msg, erro = false) {
@@ -780,6 +558,12 @@
             status.style.display = 'block';
             setTimeout(() => { status.style.display = 'none'; }, 5000);
         }
+
+        // Atualizar label do seletor de pasta
+        document.getElementById('uploadPath')?.addEventListener('change', function() {
+            const path = this.value || 'Raiz';
+            document.getElementById('currentUploadPath').textContent = path;
+        });
 
         const savedConfig = localStorage.getItem('githubConfig');
         if (savedConfig) {
