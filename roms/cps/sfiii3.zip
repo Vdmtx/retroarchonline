@@ -1,0 +1,18 @@
+{
+  "name": "sfiii3.zip",
+  "path": "roms/sfiii3.zip",
+  "sha": "584c8c9792396e9aed314a95fbd3099c2b697e7c",
+  "size": 70592155,
+  "url": "https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms/sfiii3.zip?ref=main",
+  "html_url": "https://github.com/Vdmtx/retroarchonline/blob/main/roms/sfiii3.zip",
+  "git_url": "https://api.github.com/repos/Vdmtx/retroarchonline/git/blobs/584c8c9792396e9aed314a95fbd3099c2b697e7c",
+  "download_url": "https://raw.githubusercontent.com/Vdmtx/retroarchonline/main/roms/sfiii3.zip",
+  "type": "file",
+  "content": "",
+  "encoding": "none",
+  "_links": {
+    "self": "https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms/sfiii3.zip?ref=main",
+    "git": "https://api.github.com/repos/Vdmtx/retroarchonline/git/blobs/584c8c9792396e9aed314a95fbd3099c2b697e7c",
+    "html": "https://github.com/Vdmtx/retroarchonline/blob/main/roms/sfiii3.zip"
+  }
+}
