@@ -1,0 +1,18 @@
+{
+  "name": "kof98ae2016.zip",
+  "path": "roms/kof98ae2016.zip",
+  "sha": "f7ca30ebc484a5862cca572896f806bf91c577ba",
+  "size": 30371307,
+  "url": "https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms/kof98ae2016.zip?ref=main",
+  "html_url": "https://github.com/Vdmtx/retroarchonline/blob/main/roms/kof98ae2016.zip",
+  "git_url": "https://api.github.com/repos/Vdmtx/retroarchonline/git/blobs/f7ca30ebc484a5862cca572896f806bf91c577ba",
+  "download_url": "https://raw.githubusercontent.com/Vdmtx/retroarchonline/main/roms/kof98ae2016.zip",
+  "type": "file",
+  "content": "",
+  "encoding": "none",
+  "_links": {
+    "self": "https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms/kof98ae2016.zip?ref=main",
+    "git": "https://api.github.com/repos/Vdmtx/retroarchonline/git/blobs/f7ca30ebc484a5862cca572896f806bf91c577ba",
+    "html": "https://github.com/Vdmtx/retroarchonline/blob/main/roms/kof98ae2016.zip"
+  }
+}
