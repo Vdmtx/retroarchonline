@@ -85,12 +85,13 @@
         <!-- Upload Global com Seletor de Pasta -->
         <div class="path-selector">
             <label>📍 Pasta de Destino para Upload:</label>
-            <select id="uploadPath">
+            <select id="uploadPath" onchange="atualizarLabelUpload()">
                 <option value="">Raiz (/)</option>
                 <option value="roms/">roms/</option>
                 <option value="roms/cps/">roms/cps/</option>
                 <option value="roms/midway/">roms/midway/</option>
                 <option value="roms/neogeo/">roms/neogeo/</option>
+                <option value="roms/atomiswave/">roms/atomiswave/</option>
                 <option value="bios/">bios/</option>
                 <option value="data/">data/</option>
                 <option value="data/cores/">data/cores/</option>
@@ -161,7 +162,6 @@
         let arquivosAtuais = [];
         let arquivoParaMover = null;
         let statusVerificacao = {};
-        let pastaUploadAtual = '';
         const MAX_FILE_SIZE = 70 * 1024 * 1024; // 70MB
 
         function salvarConfig() {
@@ -271,7 +271,11 @@
             document.getElementById('folder-' + pasta.replace(/\//g, '-')).classList.toggle('active');
         }
 
-        // Upload Global (com pasta selecionada)
+        function atualizarLabelUpload() {
+            const path = document.getElementById('uploadPath').value || 'Raiz';
+            document.getElementById('currentUploadPath').textContent = path;
+        }
+
         async function uploadArquivosGlobal(event) {
             const pastaDestino = document.getElementById('uploadPath').value;
             const files = Array.from(event.target.files).filter(f => {
@@ -287,7 +291,6 @@
             }
         }
 
-        // Upload Específico de Pasta
         async function uploadArquivosPasta(event, pastaDestino) {
             const files = Array.from(event.target.files).filter(f => {
                 if (f.size > MAX_FILE_SIZE) {
@@ -302,7 +305,6 @@
             }
         }
 
-        // Função genérica de upload
         async function uploadArquivo(file, pastaDestino = '') {
             const fullPath = pastaDestino ? pastaDestino + file.name : file.name;
             mostrarStatus(`📤 ${fullPath}...`);
@@ -558,12 +560,6 @@
             status.style.display = 'block';
             setTimeout(() => { status.style.display = 'none'; }, 5000);
         }
-
-        // Atualizar label do seletor de pasta
-        document.getElementById('uploadPath')?.addEventListener('change', function() {
-            const path = this.value || 'Raiz';
-            document.getElementById('currentUploadPath').textContent = path;
-        });
 
         const savedConfig = localStorage.getItem('githubConfig');
         if (savedConfig) {
