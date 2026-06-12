@@ -1,0 +1,18 @@
+{
+  "name": "kof98mix.zip",
+  "path": "roms/kof98mix.zip",
+  "sha": "9f645ae1512de10492a4404174eb4f9846e55661",
+  "size": 43658250,
+  "url": "https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms/kof98mix.zip?ref=main",
+  "html_url": "https://github.com/Vdmtx/retroarchonline/blob/main/roms/kof98mix.zip",
+  "git_url": "https://api.github.com/repos/Vdmtx/retroarchonline/git/blobs/9f645ae1512de10492a4404174eb4f9846e55661",
+  "download_url": "https://raw.githubusercontent.com/Vdmtx/retroarchonline/main/roms/kof98mix.zip",
+  "type": "file",
+  "content": "",
+  "encoding": "none",
+  "_links": {
+    "self": "https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms/kof98mix.zip?ref=main",
+    "git": "https://api.github.com/repos/Vdmtx/retroarchonline/git/blobs/9f645ae1512de10492a4404174eb4f9846e55661",
+    "html": "https://github.com/Vdmtx/retroarchonline/blob/main/roms/kof98mix.zip"
+  }
+}
