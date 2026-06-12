@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 Atomiswave</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0a; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #00aaff; text-align: center; margin-bottom: 20px; }
+        .back-link { text-align: center; margin-bottom: 20px; }
+        .back-link a { color: #00ff88; text-decoration: none; }
+        .warning { background: #00aaff22; border: 2px solid #00aaff; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 600px; text-align: center; color: #00ccff; }
+        .search-box { max-width: 600px; margin: 0 auto 30px; }
+        .search-box input { width: 100%; padding: 12px; border: 2px solid #00aaff; border-radius: 25px; background: #1a1a2e; color: #fff; font-size: 16px; }
+        .stats { text-align: center; color: #00aaff; margin-bottom: 20px; }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; }
+        .game-card { background: #1a1a2e; border: 2px solid #00aaff; border-radius: 12px; padding: 20px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .game-card:hover { border-color: #00ccff; transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,170,255,0.3); }
+        .game-icon { font-size: 56px; margin-bottom: 15px; }
+        .game-type { font-size: 10px; color: #888; margin-top: 5px; }
+        #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
+        #game { width: 100%; height: 100%; }
+        #back-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; background: #000; color: #fff; border: 2px solid #00aaff; padding: 12px 24px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🌊 ATOMISWAVE</h1>
+    <div class="back-link"><a href="index.html">← Voltar ao Menu</a></div>
+    <div class="warning">⚠️ Requer BIOS Atomiswave (awbios.zip) na pasta bios/</div>
+    <div class="search-box"><input type="text" id="search" placeholder="🔍 Buscar jogos..." oninput="filtrarJogos()"></div>
+    <div class="stats" id="stats"></div>
+    <div class="game-grid" id="gameGrid"></div>
+    <div id="game-container">
+        <button id="back-btn" onclick="voltar()">← Voltar</button>
+        <div id="game"></div>
+    </div>
+
+    <script>
+        const ROMS_BASE = 'https://vdmtx.github.io/retroarchonline/roms/atomiswave/';
+        const BIOS_BASE = 'https://vdmtx.github.io/retroarchonline/bios/';
+        let jogos = [];
+        let atomiswaveBIOS = null;
+
+        async function carregarBIOS() {
+            const biosFiles = ['awbios.zip', 'atomiswave.zip'];
+            for (const biosFile of biosFiles) {
+                try {
+                    const url = BIOS_BASE + biosFile;
+                    const response = await fetch(url, {method: 'HEAD'});
+                    if (response.ok) {
+                        atomiswaveBIOS = url;
+                        console.log('✅ BIOS:', biosFile);
+                        return true;
+                    }
+                } catch(e) {}
+            }
+            console.warn('⚠️ BIOS Atomiswave não encontrada!');
+            return false;
+        }
+
+        async function carregarJogos() {
+            await carregarBIOS();
+            
+            try {
+                const response = await fetch('https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms/atomiswave');
+                const files = await response.json();
+                
+                jogos = files.filter(f => f.name.endsWith('.zip') || f.name.endsWith('.json'))
+                    .map(f => {
+                        if (f.name.endsWith('.json')) {
+                            // Link externo
+                            return { nome: f.name.replace('.json', ''), arquivo: null, tipo: 'externo', path: f.name };
+                        } else {
+                            // ROM local
+                            return { nome: f.name.replace('.zip', ''), arquivo: f.name, tipo: 'local' };
+                        }
+                    })
+                    .sort((a, b) => a.nome.localeCompare(b.nome));
+                
+                document.getElementById('stats').textContent = `${jogos.length} jogo(s) • BIOS: ${atomiswaveBIOS ? '✅' : '❌'}`;
+                renderizarJogos(jogos);
+            } catch(e) {
+                console.error('Erro ao carregar jogos:', e);
+                document.getElementById('stats').textContent = 'Erro ao carregar jogos';
+            }
+        }
+
+        function renderizarJogos(lista) {
+            document.getElementById('gameGrid').innerHTML = lista.map(j => `
+                <div class="game-card" onclick="iniciarJogo('${j.arquivo || j.path}', '${j.tipo}')">
+                    <div class="game-icon"></div>
+                    <div>${j.nome}</div>
+                    <div class="game-type">${j.tipo === 'externo' ? '🔗 Externo' : ' Local'}</div>
+                </div>
+            `).join('');
+        }
+
+        function filtrarJogos() {
+            const busca = document.getElementById('search').value.toLowerCase();
+            const filtrados = jogos.filter(j => j.nome.toLowerCase().includes(busca));
+            renderizarJogos(filtrados);
+        }
+
+        async function iniciarJogo(arquivo, tipo) {
+            document.getElementById('game-container').style.display = 'block';
+            
+            Object.keys(window).forEach(key => {
+                if (key.startsWith('EJS_')) delete window[key];
+            });
+            document.getElementById('game').innerHTML = '';
+            
+            window.EJS_player = "#game";
+            window.EJS_core = "flycast";
+            window.EJS_gameName = arquivo.replace('.zip', '').replace('.json', '');
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
+            window.EJS_startOnLoaded = true;
+            window.EJS_color = "#000000";
+            window.EJS_fullscreenOnLoaded = false;
+            window.EJS_disableDatabases = true;
+            window.EJS_disableLocalStorage = true;
+            
+            if (tipo === 'local') {
+                window.EJS_gameUrl = ROMS_BASE + arquivo;
+            } else {
+                // Carregar URL externa do JSON
+                try {
+                    const response = await fetch(ROMS_BASE + arquivo);
+                    const data = await response.json();
+                    window.EJS_gameUrl = data.url;
+                } catch(e) {
+                    alert('Erro ao carregar link externo');
+                    voltar();
+                    return;
+                }
+            }
+            
+            if (atomiswaveBIOS) {
+                window.EJS_biosUrl = atomiswaveBIOS;
+            }
+            
+            window.EJS_ready = function() {
+                console.log('✅ Jogo carregado!');
+            };
+            
+            window.EJS_onGameStart = function() {
+                console.log('🎮 Jogo iniciado!');
+            };
+            
+            const script = document.createElement('script');
+            script.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
+            document.body.appendChild(script);
+            
+            console.log('🎮 Carregando:', arquivo, 'Tipo:', tipo);
+        }
+
+        function voltar() { location.reload(); }
+        carregarJogos();
+    </script>
+</body>
+</html>
