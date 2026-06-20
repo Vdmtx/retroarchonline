@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todas as ROMs - Teste de Emuladores</title>
+    <script src="https://cdn.jsdelivr.net/npm/nostalgist@0.19.2/dist/nostalgist.umd.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle { color: #888; }
+        
+        .controls {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        .control-group label {
+            font-size: 0.85em;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        .control-group select, .control-group input {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1em;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .stat-label { color: #888; font-size: 0.9em; }
+        
+        .roms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 15px;
+        }
+        .rom-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        .rom-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+        }
+        .rom-system {
+            display: inline-block;
+            background: rgba(123, 47, 247, 0.3);
+            color: #b794f6;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .rom-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+        .rom-info {
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .rom-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-test {
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+            color: white;
+        }
+        .btn-test:hover { transform: scale(1.05); }
+        .btn-info {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        .btn-info:hover { background: rgba(255, 255, 255, 0.2); }
+        
+        #emulator-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #emulator-overlay.active { display: flex; }
+        .close-btn {
+            position: absolute;
+            top: 20px; right: 20px;
+            padding: 10px 20px;
+            background: #ff4757;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            z-index: 10000;
+        }
+        .close-btn:hover { background: #ff6b7a; }
+        .loading {
+            color: #00d4ff;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            color: #00d4ff;
+            max-width: 600px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .status-box.error {
+            background: rgba(255, 71, 87, 0.2);
+            border-color: rgba(255, 71, 87, 0.5);
+            color: #ff4757;
+        }
+        
+        .loading-scan {
+            text-align: center;
+            padding: 60px 20px;
+            color: #00d4ff;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.5); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Todas as ROMs</h1>
+            <p class="subtitle">Teste todas as ROMs do repositório com diferentes emuladores</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <label> Emulador (Core)</label>
+                <select id="core-select">
+                    <option value="fbneo">FBNeo (FinalBurn Neo) - Arcade</option>
+                    <option value="mame2003">MAME 2003 - Arcade</option>
+                    <option value="mame2010">MAME 2010 - Arcade</option>
+                    <option value="fba">FBA - Arcade</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>📁 Sistema</label>
+                <select id="system-filter" onchange="filterRoms()">
+                    <option value="">Todos os sistemas</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>🔍 Buscar ROM</label>
+                <input type="text" id="search-rom" placeholder="Digite o nome..." onkeyup="filterRoms()">
+            </div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat">
+                <div class="stat-number" id="total-roms">0</div>
+                <div class="stat-label">Total de ROMs</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="total-systems">0</div>
+                <div class="stat-label">Sistemas</div>
+            </div>
+        </div>
+
+        <div id="roms-container">
+            <div class="loading-scan">
+                <div class="loading">Carregando ROMs</div>
+                <p style="margin-top: 15px; color: #888;">Escaneando repositório...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="emulator-overlay">
+        <button class="close-btn" onclick="closeEmulator()">✕ FECHAR</button>
+        <div class="loading" id="loading-text">Carregando</div>
+        <div class="status-box" id="status-box"></div>
+    </div>
+
+    <script>
+        const REPO_BASE = 'https://raw.githubusercontent.com/Vdmtx/retroarchonline/main';
+        const GITHUB_API = 'https://api.github.com/repos/Vdmtx/retroarchonline/contents';
+        
+        let allRoms = [];
+        let systems = new Set();
+
+        const CORES = {
+            fbneo: {
+                name: 'FBNeo (FinalBurn Neo)',
+                js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.wasm'
+            },
+            mame2003: {
+                name: 'MAME 2003',
+                js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/mame2003_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/mame2003_libretro.wasm'
+            },
+            mame2010: {
+                name: 'MAME 2010',
+                js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/mame2010_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/mame2010_libretro.wasm'
+            },
+            fba: {
+                name: 'FBA (FinalBurn Alpha)',
+                js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fba_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fba_libretro.wasm'
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await scanAllRoms();
+        });
+
+        async function scanAllRoms() {
+            try {
+                const romsFolder = await fetch(`${GITHUB_API}/roms`).then(r => r.json());
+                
+                for (const item of romsFolder) {
+                    if (item.type === 'dir') {
+                        const system = item.name;
+                        systems.add(system);
+                        
+                        const roms = await fetch(`${GITHUB_API}/roms/${system}`).then(r => r.json());
+                        const zipFiles = roms.filter(f => f.type === 'file' && f.name.endsWith('.zip'));
+                        
+                        zipFiles.forEach(rom => {
+                            allRoms.push({
+                                system: system,
+                                name: rom.name,
+                                size: rom.size,
+                                url: rom.download_url
+                            });
+                        });
+                    }
+                }
+                
+                displayRoms();
+                updateStats();
+                populateSystemFilter();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('roms-container').innerHTML = `
+                    <div style="text-align: center; color: #ff4757; padding: 40px;">
+                        <h2>❌ Erro ao carregar ROMs</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayRoms(roms = allRoms) {
+            const container = document.getElementById('roms-container');
+            
+            if (roms.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #888; padding: 40px;">Nenhuma ROM encontrada</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="roms-grid">
+                    ${roms.map(rom => `
+                        <div class="rom-card">
+                            <div class="rom-system">${rom.system}</div>
+                            <div class="rom-name">${rom.name.replace('.zip', '')}</div>
+                            <div class="rom-info">${formatFileSize(rom.size)}</div>
+                            <div class="rom-actions">
+                                <button class="btn btn-info" onclick="showInfo('${rom.system}', '${rom.name}', ${rom.size})">ℹ️ Info</button>
+                                <button class="btn btn-test" onclick="testRom('${rom.system}', '${rom.name}')">▶ Testar</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function populateSystemFilter() {
+            const select = document.getElementById('system-filter');
+            Array.from(systems).sort().forEach(system => {
+                const option = document.createElement('option');
+                option.value = system;
+                option.textContent = system.toUpperCase();
+                select.appendChild(option);
+            });
+        }
+
+        function filterRoms() {
+            const systemFilter = document.getElementById('system-filter').value;
+            const searchFilter = document.getElementById('search-rom').value.toLowerCase();
+            
+            const filtered = allRoms.filter(rom => {
+                const matchSystem = !systemFilter || rom.system === systemFilter;
+                const matchSearch = !searchFilter || rom.name.toLowerCase().includes(searchFilter);
+                return matchSystem && matchSearch;
+            });
+            
+            displayRoms(filtered);
+        }
+
+        function updateStats() {
+            document.getElementById('total-roms').textContent = allRoms.length;
+            document.getElementById('total-systems').textContent = systems.size;
+        }
+
+        function showInfo(system, name, size) {
+            alert(`📦 ${name}\n\n📁 Sistema: ${system.toUpperCase()}\n📏 Tamanho: ${formatFileSize(size)}\n🔗 URL: ${REPO_BASE}/roms/${system}/${name}`);
+        }
+
+        async function testRom(system, romFile) {
+            const core = document.getElementById('core-select').value;
+            const coreInfo = CORES[core];
+            
+            const overlay = document.getElementById('emulator-overlay');
+            const loadingText = document.getElementById('loading-text');
+            const statusBox = document.getElementById('status-box');
+            
+            overlay.classList.add('active');
+            loadingText.style.display = 'block';
+            statusBox.style.display = 'block';
+            statusBox.classList.remove('error');
+            
+            let status = `🎮 Sistema: ${system.toUpperCase()}\n📦 ROM: ${romFile}\n🔧 Core: ${coreInfo.name}\n\n⏳ Carregando...`;
+            updateStatus(status);
+
+            try {
+                const romUrl = `${REPO_BASE}/roms/${system}/${encodeURIComponent(romFile)}`;
+                
+                let biosUrl = null;
+                if (system === 'neogeo') {
+                    biosUrl = `${REPO_BASE}/bios/neogeo.zip`;
+                    status += '\n🔌 BIOS: neogeo.zip';
+                } else if (system === 'cps') {
+                    biosUrl = `${REPO_BASE}/bios/qsound.zip`;
+                    status += '\n🔌 BIOS: qsound.zip';
+                }
+                
+                updateStatus(status);
+
+                const launchConfig = {
+                    core: {
+                        name: core,
+                        js: coreInfo.js,
+                        wasm: coreInfo.wasm
+                    },
+                    rom: romUrl
+                };
+
+                if (biosUrl) {
+                    launchConfig.bios = biosUrl;
+                }
+
+                status += '\n\n🚀 Iniciando emulador...';
+                updateStatus(status);
+                
+                const nostalgist = await Nostalgist.launch(launchConfig);
+                
+                status += '\n\n✅ EMULADOR INICIADO!\n\n' +
+                    '🎮 Controles:\n' +
+                    '• Setas/WASD: Mover\n' +
+                    '• X/Z: Botão A\n' +
+                    '• C/A: Botão B\n' +
+                    '• Enter: Start\n' +
+                    '• Shift: Select\n' +
+                    '• 5: Insert Coin\n\n' +
+                    'Use o menu do emulador para salvar/carregar';
+                
+                updateStatus(status);
+                setTimeout(() => { loadingText.style.display = 'none'; }, 2000);
+
+            } catch (error) {
+                console.error('Erro:', error);
+                updateStatus(`❌ ERRO\n\nSistema: ${system}\nROM: ${romFile}\nCore: ${coreInfo.name}\n\nErro: ${error.message}`, true);
+            }
+        }
+
+        function updateStatus(message, isError) {
+            const statusBox = document.getElementById('status-box');
+            statusBox.textContent = message;
+            if (isError) statusBox.classList.add('error');
+        }
+
+        function closeEmulator() {
+            document.getElementById('emulator-overlay').classList.remove('active');
+            location.reload();
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
