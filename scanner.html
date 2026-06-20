@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner de ROMs - RetroArch Online</title>
+    <script src="https://cdn.jsdelivr.net/npm/nostalgist@0.19.2/dist/nostalgist.umd.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        h1 {
+            font-size: 2em;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle { color: #888; margin-bottom: 15px; }
+        
+        .scan-info {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        .scan-info strong { color: #00d4ff; }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-label { color: #888; margin-top: 5px; }
+        
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        .control-group label {
+            font-size: 0.85em;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        .control-group select, .control-group input {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1em;
+        }
+        
+        .folder-section {
+            margin-bottom: 40px;
+        }
+        .folder-header {
+            background: linear-gradient(135deg, #7b2ff7, #00d4ff);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .folder-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: white;
+        }
+        .folder-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+        }
+        .system-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .system-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+        }
+        .system-header {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .system-name {
+            font-weight: bold;
+            color: #00d4ff;
+            text-transform: uppercase;
+        }
+        .system-roms-count {
+            background: rgba(0, 212, 255, 0.2);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+        }
+        .rom-list {
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        .rom-list.expanded { display: block; }
+        .rom-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .rom-item:hover { background: rgba(0, 212, 255, 0.05); }
+        .rom-name {
+            font-size: 0.9em;
+            color: #ccc;
+            word-break: break-all;
+        }
+        .rom-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        .btn-test {
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+            color: white;
+        }
+        .btn-test:hover { transform: scale(1.05); }
+        .btn-info {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        .btn-info:hover { background: rgba(255, 255, 255, 0.2); }
+        
+        #emulator-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #emulator-overlay.active { display: flex; }
+        .close-btn {
+            position: absolute;
+            top: 20px; right: 20px;
+            padding: 10px 20px;
+            background: #ff4757;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            z-index: 10000;
+        }
+        .close-btn:hover { background: #ff6b7a; }
+        .loading {
+            color: #00d4ff;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            color: #00d4ff;
+            max-width: 600px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .status-box.error {
+            background: rgba(255, 71, 87, 0.2);
+            border-color: rgba(255, 71, 87, 0.5);
+            color: #ff4757;
+        }
+        
+        .loading-scan {
+            text-align: center;
+            padding: 40px;
+            color: #00d4ff;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 255, 0.8); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1> Scanner de ROMs</h1>
+            <p class="subtitle">Varredura automática do repositório RetroArch Online</p>
+            <div class="scan-info">
+                <strong>🔍 Escaneando:</strong><br>
+                • /bios - Arquivos de BIOS<br>
+                • /roms - ROMs organizadas por sistema<br>
+                • /data - Dados adicionais
+            </div>
+        </header>
+
+        <div id="stats-container" class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-bios">0</div>
+                <div class="stat-label">BIOS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-systems">0</div>
+                <div class="stat-label">Sistemas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-roms">0</div>
+                <div class="stat-label">ROMs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-data">0</div>
+                <div class="stat-label">Arquivos Data</div>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <div class="control-group">
+                <label>🎮 Motor/Emulador (Core)</label>
+                <select id="core-select" onchange="updateCoreInfo()">
+                    <option value="fbneo">FBNeo (FinalBurn Neo) - Arcade</option>
+                    <option value="mame2003">MAME 2003 - Arcade</option>
+                    <option value="mame2010">MAME 2010 - Arcade</option>
+                    <option value="fba">FBA - Arcade</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>🔍 Filtrar arquivos</label>
+                <input type="text" id="filter-files" placeholder="Digite para filtrar..." onkeyup="filterFiles()">
+            </div>
+        </div>
+
+        <div class="core-info" id="core-info" style="background: rgba(123, 47, 247, 0.2); border: 1px solid rgba(123, 47, 247, 0.5); padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+            <strong>Core selecionado:</strong> FBNeo - FinalBurn Neo<br>
+            <small>Compatível com: NeoGeo, CPS1, CPS2, CPS3, Midway, etc.</small>
+        </div>
+
+        <div id="scan-container">
+            <div class="loading-scan">
+                <div class="loading">Escaneando repositório</div>
+                <p style="margin-top: 15px; color: #888;">Aguarde enquanto listamos todos os arquivos...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="emulator-overlay">
+        <button class="close-btn" onclick="closeEmulator()">✕ FECHAR EMULADOR</button>
+        <div class="loading" id="loading-text">Carregando</div>
+        <div class="status-box" id="status-box"></div>
+    </div>
+
+    <script>
+        // Configurações
+        const REPO_OWNER = 'Vdmtx';
+        const REPO_NAME = 'retroarchonline';
+        const REPO_BRANCH = 'main';
+        const GITHUB_API = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
+        const RAW_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}`;
+        
+        // Dados escaneados
+        let scannedData = {
+            bios: [],
+            roms: {},
+            data: []
+        };
+
+        // Cores disponíveis
+        const CORES = {
+            fbneo: {
+                name: 'FBNeo (FinalBurn Neo)',
+                js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.wasm',
+                description: 'Compatível com: NeoGeo, CPS1, CPS2, CPS3, Midway, etc.'
+            },
+            mame2003: {
+                name: 'MAME 2003',
+                js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/mame2003_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/mame2003_libretro.wasm',
+                description: 'MAME otimizado para performance'
+            },
+            mame2010: {
+                name: 'MAME 2010',
+                js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/mame2010_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/mame2010_libretro.wasm',
+                description: 'MAME com melhor compatibilidade'
+            },
+            fba: {
+                name: 'FBA (FinalBurn Alpha)',
+                js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fba_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fba_libretro.wasm',
+                description: 'Versão antiga do FinalBurn'
+            }
+        };
+
+        // Inicialização
+        window.addEventListener('DOMContentLoaded', async () => {
+            await scanRepository();
+        });
+
+        // Escanear repositório
+        async function scanRepository() {
+            try {
+                // Escanear BIOS
+                updateStatus('Escaneando pasta /bios...');
+                scannedData.bios = await scanFolder('bios');
+                
+                // Escanear ROMs
+                updateStatus('Escaneando pasta /roms...');
+                const romsFolder = await scanFolder('roms', false);
+                for (const item of romsFolder) {
+                    if (item.type === 'dir') {
+                        updateStatus(`Escaneando sistema: ${item.name}...`);
+                        scannedData.roms[item.name] = await scanFolder(`roms/${item.name}`);
+                    }
+                }
+                
+                // Escanear Data
+                updateStatus('Escaneando pasta /data...');
+                scannedData.data = await scanFolder('data');
+                
+                updateStatus('Scan completo!');
+                
+                // Atualizar estatísticas
+                updateStats();
+                
+                // Renderizar interface
+                renderScannedData();
+                
+            } catch (error) {
+                console.error('Erro ao escanear:', error);
+                document.getElementById('scan-container').innerHTML = `
+                    <div style="text-align: center; color: #ff4757; padding: 40px;">
+                        <h2>❌ Erro ao escanear repositório</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-test" onclick="location.reload()" style="margin-top: 20px;">
+                            🔄 Tentar Novamente
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Escanear pasta via GitHub API
+        async function scanFolder(path, flat = true) {
+            try {
+                const response = await fetch(`${GITHUB_API}/${path}`);
+                if (!response.ok) return [];
+                
+                const data = await response.json();
+                if (flat) {
+                    return data.filter(item => item.type === 'file' && item.name.endsWith('.zip'));
+                }
+                return data;
+            } catch (error) {
+                console.error(`Erro ao escanear ${path}:`, error);
+                return [];
+            }
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            const totalBios = scannedData.bios.length;
+            const totalSystems = Object.keys(scannedData.roms).length;
+            const totalRoms = Object.values(scannedData.roms).reduce((acc, roms) => acc + roms.length, 0);
+            const totalData = scannedData.data.length;
+            
+            animateNumber('total-bios', totalBios);
+            animateNumber('total-systems', totalSystems);
+            animateNumber('total-roms', totalRoms);
+            animateNumber('total-data', totalData);
+        }
+
+        // Animar números
+        function animateNumber(elementId, target) {
+            const element = document.getElementById(elementId);
+            const duration = 1000;
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 16);
+        }
+
+        // Renderizar dados escaneados
+        function renderScannedData() {
+            const container = document.getElementById('scan-container');
+            
+            let html = '';
+            
+            // Seção BIOS
+            if (scannedData.bios.length > 0) {
+                html += `
+                    <div class="folder-section">
+                        <div class="folder-header" onclick="toggleFolder('bios-section')">
+                            <div class="folder-title">📁 BIOS</div>
+                            <div class="folder-count">${scannedData.bios.length} arquivos</div>
+                        </div>
+                        <div id="bios-section" class="system-grid">
+                            ${renderFileList(scannedData.bios, 'bios', '')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Seção ROMs por sistema
+            for (const [system, roms] of Object.entries(scannedData.roms)) {
+                if (roms.length > 0) {
+                    html += `
+                        <div class="folder-section">
+                            <div class="folder-header" onclick="toggleFolder('roms-${system}')">
+                                <div class="folder-title">🎮 ${system.toUpperCase()}</div>
+                                <div class="folder-count">${roms.length} ROMs</div>
+                            </div>
+                            <div id="roms-${system}" class="system-grid" style="display: none;">
+                                ${renderRomList(system, roms)}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Seção Data
+            if (scannedData.data.length > 0) {
+                html += `
+                    <div class="folder-section">
+                        <div class="folder-header" onclick="toggleFolder('data-section')">
+                            <div class="folder-title">📂 DATA</div>
+                            <div class="folder-count">${scannedData.data.length} arquivos</div>
+                        </div>
+                        <div id="data-section" class="system-grid">
+                            ${renderFileList(scannedData.data, 'data', '')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html || '<div style="text-align: center; color: #888; padding: 40px;">Nenhum arquivo encontrado</div>';
+        }
+
+        // Renderizar lista de arquivos (BIOS/DATA)
+        function renderFileList(files, type, system) {
+            return files.map(file => `
+                <div class="system-card" data-name="${file.name.toLowerCase()}">
+                    <div class="system-header">
+                        <div class="system-name">${file.name}</div>
+                        <div class="system-roms-count">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div class="rom-list expanded">
+                        <div class="rom-item">
+                            <span class="rom-name">URL: ${file.download_url}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Renderizar lista de ROMs
+        function renderRomList(system, roms) {
+            return roms.map(rom => `
+                <div class="system-card" data-name="${rom.name.toLowerCase()}" data-system="${system}">
+                    <div class="system-header" onclick="toggleRomList(this)">
+                        <div class="system-name">${rom.name.replace('.zip', '')}</div>
+                        <div class="system-roms-count">${formatFileSize(rom.size)}</div>
+                    </div>
+                    <div class="rom-list">
+                        <div class="rom-item">
+                            <span class="rom-name">${rom.name}</span>
+                            <div class="rom-actions">
+                                <button class="btn btn-info" onclick="event.stopPropagation(); showRomInfo('${system}', '${rom.name}')">ℹ️ Info</button>
+                                <button class="btn btn-test" onclick="event.stopPropagation(); testRom('${system}', '${rom.name}')">▶ Testar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle folder
+        function toggleFolder(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = element.style.display === 'none' ? 'grid' : 'none';
+            }
+        }
+
+        // Toggle ROM list
+        function toggleRomList(header) {
+            const list = header.nextElementSibling;
+            list.classList.toggle('expanded');
+        }
+
+        // Filtrar arquivos
+        function filterFiles() {
+            const filter = document.getElementById('filter-files').value.toLowerCase();
+            const cards = document.querySelectorAll('.system-card');
+            
+            cards.forEach(card => {
+                const name = card.dataset.name || '';
+                card.style.display = name.includes(filter) ? 'block' : 'none';
+            });
+        }
+
+        // Mostrar info da ROM
+        function showRomInfo(system, romName) {
+            const rom = scannedData.roms[system]?.find(r => r.name === romName);
+            if (rom) {
+                alert(`📦 ${romName}\n\n📁 Sistema: ${system.toUpperCase()}\n📏 Tamanho: ${formatFileSize(rom.size)}\n🔗 URL: ${rom.download_url}\n📅 Atualizado: ${new Date(rom.updated_at).toLocaleDateString()}`);
+            }
+        }
+
+        // Testar ROM
+        async function testRom(system, romFile) {
+            const core = document.getElementById('core-select').value;
+            const coreInfo = CORES[core];
+            
+            const overlay = document.getElementById('emulator-overlay');
+            const loadingText = document.getElementById('loading-text');
+            const statusBox = document.getElementById('status-box');
+            
+            overlay.classList.add('active');
+            loadingText.style.display = 'block';
+            statusBox.style.display = 'block';
+            statusBox.classList.remove('error');
+            
+            let status = `🎮 Sistema: ${system.toUpperCase()}\n📦 ROM: ${romFile}\n🔧 Core: ${coreInfo.name}\n\n⏳ Carregando...`;
+            updateStatus(status);
+
+            try {
+                const romUrl = `${RAW_BASE}/roms/${system}/${encodeURIComponent(romFile)}`;
+                
+                // BIOS mapping
+                let biosUrl = null;
+                if (system === 'neogeo') {
+                    biosUrl = `${RAW_BASE}/bios/neogeo.zip`;
+                    status += '\n🔌 BIOS: neogeo.zip';
+                } else if (system === 'cps') {
+                    biosUrl = `${RAW_BASE}/bios/qsound.zip`;
+                    status += '\n🔌 BIOS: qsound.zip';
+                }
+                
+                updateStatus(status);
+
+                const launchConfig = {
+                    core: {
+                        name: core,
+                        js: coreInfo.js,
+                        wasm: coreInfo.wasm
+                    },
+                    rom: romUrl
+                };
+
+                if (biosUrl) {
+                    launchConfig.bios = biosUrl;
+                }
+
+                status += '\n\n🚀 Iniciando emulador...';
+                updateStatus(status);
+                
+                const nostalgist = await Nostalgist.launch(launchConfig);
+                
+                status += '\n\n✅ EMULADOR INICIADO!\n\n' +
+                    '🎮 Controles:\n' +
+                    '• Setas/WASD: Mover\n' +
+                    '• X/Z: Botão A\n' +
+                    '• C/A: Botão B\n' +
+                    '• Enter: Start\n' +
+                    '• Shift: Select\n' +
+                    '• 5: Insert Coin';
+                
+                updateStatus(status);
+                
+                setTimeout(() => {
+                    loadingText.style.display = 'none';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Erro:', error);
+                updateStatus(`❌ ERRO\n\nSistema: ${system}\nROM: ${romFile}\nCore: ${coreInfo.name}\n\nErro: ${error.message}`, true);
+            }
+        }
+
+        function updateStatus(message, isError) {
+            const statusBox = document.getElementById('status-box');
+            statusBox.textContent = typeof message === 'function' ? message(statusBox.textContent) : message;
+            if (isError) statusBox.classList.add('error');
+        }
+
+        function closeEmulator() {
+            document.getElementById('emulator-overlay').classList.remove('active');
+            location.reload();
+        }
+
+        function updateCoreInfo() {
+            const core = CORES[document.getElementById('core-select').value];
+            document.getElementById('core-info').innerHTML = `
+                <strong>Core selecionado:</strong> ${core.name}<br>
+                <small>${core.description}</small>
+            `;
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
