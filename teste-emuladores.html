@@ -210,10 +210,31 @@
             border-color: rgba(255, 71, 87, 0.5);
             color: #ff4757;
         }
+        .status-box.success {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: rgba(40, 167, 69, 0.5);
+            color: #28a745;
+        }
         .loading-scan {
             text-align: center;
             padding: 60px 20px;
             color: #00d4ff;
+        }
+        .progress-bar {
+            width: 100%;
+            max-width: 400px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
         }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
@@ -271,6 +292,9 @@
     <div id="emulator-overlay">
         <button class="close-btn" onclick="closeEmulator()">✕ FECHAR</button>
         <div class="loading" id="loading-text">Carregando</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
         <div class="status-box" id="status-box"></div>
     </div>
 
@@ -281,31 +305,18 @@
         let allRoms = [];
 
         // NJRBuild 2.5.27 - Core para NeoGeo
-        // Usando CDN alternativo (jsdelivr) para evitar problemas de CORS
         const NJRBUILD_CORE = {
             name: 'njrbuild',
             version: '2.5.27',
-            js: 'https://cdn.jsdelivr.net/gh/libretro/njrbuild-libretro@master/njrbuild_libretro.js',
-            wasm: 'https://cdn.jsdelivr.net/gh/libretro/njrbuild-libretro@master/njrbuild_libretro.wasm'
+            js: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/njrbuild_libretro.js',
+            wasm: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/njrbuild_libretro.wasm'
         };
 
         // FBNeo - Core para CPS e Midway
         const FBNEO_CORE = {
             name: 'fbneo',
-            js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.js',
-            wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.wasm'
-        };
-
-        // Fallback: usar cores do RetroArch CDN oficial
-        const RETROARCH_CDN = {
-            njrbuild: {
-                js: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/njrbuild_libretro.js',
-                wasm: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/njrbuild_libretro.wasm'
-            },
-            fbneo: {
-                js: 'https://cdn.jsdelivr.net/gh/libretro/fbneo@master/fbneo_libretro.js',
-                wasm: 'https://cdn.jsdelivr.net/gh/libretro/fbneo@master/fbneo_libretro.wasm'
-            }
+            js: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/fbneo_libretro.js',
+            wasm: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/fbneo_libretro.wasm'
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
@@ -347,7 +358,7 @@
                 console.error('Erro:', error);
                 document.getElementById('roms-container').innerHTML = `
                     <div style="text-align: center; color: #ff4757; padding: 40px;">
-                        <h2>❌ Erro ao carregar ROMs</h2>
+                        <h2> Erro ao carregar ROMs</h2>
                         <p>${error.message}</p>
                     </div>
                 `;
@@ -405,17 +416,40 @@
             const overlay = document.getElementById('emulator-overlay');
             const loadingText = document.getElementById('loading-text');
             const statusBox = document.getElementById('status-box');
+            const progressFill = document.getElementById('progress-fill');
             
             overlay.classList.add('active');
             loadingText.style.display = 'block';
             statusBox.style.display = 'block';
-            statusBox.classList.remove('error');
+            statusBox.classList.remove('error', 'success');
+            progressFill.style.width = '0%';
             
-            let status = ` Sistema: ${system.toUpperCase()}\n ROM: ${romFile}\n🔧 Core: ${core.name.toUpperCase()}\n\n⏳ Carregando...`;
+            let status = `🎮 Sistema: ${system.toUpperCase()}\n📦 ROM: ${romFile}\n🔧 Core: ${core.name.toUpperCase()}\n\n⏳ Iniciando...`;
             updateStatus(status);
+            setProgress(10);
 
             try {
-                // Usar jsDelivr para evitar problemas de CORS do GitHub Raw
+                // Testar se o core existe antes de tentar carregar
+                status += '\n\n🔍 Verificando core...';
+                updateStatus(status);
+                
+                const coreJsResponse = await fetch(core.js, { method: 'HEAD' });
+                if (!coreJsResponse.ok) {
+                    throw new Error(`Core JS não encontrado: ${core.js}\nStatus: ${coreJsResponse.status}`);
+                }
+                setProgress(20);
+                status += '\n✅ Core JS OK';
+                updateStatus(status);
+
+                const coreWasmResponse = await fetch(core.wasm, { method: 'HEAD' });
+                if (!coreWasmResponse.ok) {
+                    throw new Error(`Core WASM não encontrado: ${core.wasm}\nStatus: ${coreWasmResponse.status}`);
+                }
+                setProgress(30);
+                status += '\n✅ Core WASM OK';
+                updateStatus(status);
+
+                // URLs via jsDelivr para evitar CORS
                 const romUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/roms/${system}/${encodeURIComponent(romFile)}`;
                 
                 let biosUrl = null;
@@ -424,10 +458,36 @@
                     status += '\n🔌 BIOS: neogeo.zip';
                 } else if (system === 'cps') {
                     biosUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/bios/qsound.zip`;
-                    status += '\n BIOS: qsound.zip';
+                    status += '\n🔌 BIOS: qsound.zip';
                 }
                 
                 updateStatus(status);
+                setProgress(40);
+
+                // Testar ROM
+                status += '\n\n📥 Verificando ROM...';
+                updateStatus(status);
+                const romResponse = await fetch(romUrl, { method: 'HEAD' });
+                if (!romResponse.ok) {
+                    throw new Error(`ROM não encontrada: ${romUrl}\nStatus: ${romResponse.status}`);
+                }
+                setProgress(60);
+                status += '\n✅ ROM OK';
+                updateStatus(status);
+
+                // Testar BIOS se existir
+                if (biosUrl) {
+                    status += '\n📥 Verificando BIOS...';
+                    updateStatus(status);
+                    const biosResponse = await fetch(biosUrl, { method: 'HEAD' });
+                    if (!biosResponse.ok) {
+                        status += `\n⚠️ BIOS não encontrada (pode não ser necessária)`;
+                    } else {
+                        status += '\n✅ BIOS OK';
+                    }
+                    updateStatus(status);
+                }
+                setProgress(70);
 
                 const launchConfig = {
                     core: {
@@ -442,14 +502,20 @@
                     launchConfig.bios = biosUrl;
                 }
 
-                status += '\n\n🚀 Iniciando emulador...';
+                status += '\n\n🚀 Carregando emulador...';
                 updateStatus(status);
+                setProgress(80);
+
+                // Timeout de 30 segundos
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Timeout: Emulador demorou mais de 30 segundos para carregar')), 30000);
+                });
+
+                const nostalgistPromise = Nostalgist.launch(launchConfig);
+                const nostalgist = await Promise.race([nostalgistPromise, timeoutPromise]);
                 
-                console.log('Configuração:', launchConfig);
-                
-                const nostalgist = await Nostalgist.launch(launchConfig);
-                
-                status += '\n\n✅ EMULADOR INICIADO!\n\n' +
+                setProgress(100);
+                status += '\n\n✅ EMULADOR INICIADO COM SUCESSO!\n\n' +
                     '🎮 Controles:\n' +
                     '• Setas/WASD: Mover\n' +
                     '• X/Z: Botão A\n' +
@@ -459,19 +525,26 @@
                     '• 5: Insert Coin\n\n' +
                     '💡 Use o menu do emulador para salvar/carregar';
                 
-                updateStatus(status);
-                setTimeout(() => { loadingText.style.display = 'none'; }, 2000);
+                updateStatus(status, false, true);
+                setTimeout(() => { loadingText.style.display = 'none'; }, 1500);
 
             } catch (error) {
                 console.error('Erro completo:', error);
-                updateStatus(`❌ ERRO DETALHADO\n\nSistema: ${system}\nROM: ${romFile}\nCore: ${core.name}\n\nErro: ${error.message}\n\n🔍 Diagnóstico:\n• Core JS: ${core.js}\n• Core WASM: ${core.wasm}\n• ROM URL: ${romUrl}\n• BIOS URL: ${biosUrl || 'N/A'}\n\n💡 Possíveis causas:\n1. Core não encontrado no CDN\n2. ROM/BIOS não existe\n3. Problema de CORS\n4. Arquivo muito grande`, true);
+                setProgress(0);
+                updateStatus(`❌ ERRO DETALHADO\n\nSistema: ${system}\nROM: ${romFile}\nCore: ${core.name}\n\nErro: ${error.message}\n\n🔍 URLs testadas:\n• Core JS: ${core.js}\n• Core WASM: ${core.wasm}\n• ROM: ${romUrl}\n• BIOS: ${biosUrl || 'N/A'}\n\n💡 Soluções:\n1. Verifique se o core existe no CDN\n2. Confirme que a ROM está no repositório\n3. Tente outro navegador`, true);
             }
         }
 
-        function updateStatus(message, isError) {
+        function setProgress(percent) {
+            document.getElementById('progress-fill').style.width = percent + '%';
+        }
+
+        function updateStatus(message, isError, isSuccess) {
             const statusBox = document.getElementById('status-box');
             statusBox.textContent = message;
+            statusBox.classList.remove('error', 'success');
             if (isError) statusBox.classList.add('error');
+            if (isSuccess) statusBox.classList.add('success');
         }
 
         function closeEmulator() {
