@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste de ROMs - NJRBuild + FBNeo</title>
+    <title>Teste de ROMs - Cores Locais</title>
     <script src="https://cdn.jsdelivr.net/npm/nostalgist@0.19.2/dist/nostalgist.umd.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,7 +15,6 @@
             padding: 20px;
         }
         .container { max-width: 1400px; margin: 0 auto; }
-        
         header {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             padding: 30px;
@@ -31,65 +30,38 @@
             margin-bottom: 10px;
         }
         .subtitle { color: #888; margin-bottom: 15px; }
-        
-        .emulator-info {
+        .cores-info {
             background: rgba(0, 212, 255, 0.1);
             border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 8px;
             padding: 15px;
-            margin-bottom: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
         }
-        .emulator-info strong { color: #00d4ff; }
-        .emulator-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            margin: 5px 5px 5px 0;
-            font-weight: bold;
-        }
-        .badge-neogeo { background: rgba(255, 107, 107, 0.3); color: #ff6b6b; }
-        .badge-cps { background: rgba(78, 205, 196, 0.3); color: #4ecdc4; }
-        .badge-midway { background: rgba(255, 230, 109, 0.3); color: #ffe66d; }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .stat-label { color: #888; margin-top: 5px; }
-        
+        .cores-info strong { color: #00d4ff; }
         .controls {
             background: rgba(255, 255, 255, 0.05);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
-        .search-box {
-            width: 100%;
-            padding: 12px;
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        .control-group label {
+            font-size: 0.85em;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        .control-group select, .control-group input {
+            padding: 10px;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 6px;
             color: #fff;
             font-size: 1em;
         }
-        
         .roms-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -107,22 +79,17 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
         }
-        .rom-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
         .rom-system {
+            display: inline-block;
             padding: 4px 10px;
             border-radius: 12px;
             font-size: 0.8em;
             font-weight: bold;
+            margin-bottom: 8px;
         }
         .system-neogeo { background: rgba(255, 107, 107, 0.3); color: #ff6b6b; }
         .system-cps { background: rgba(78, 205, 196, 0.3); color: #4ecdc4; }
         .system-midway { background: rgba(255, 230, 109, 0.3); color: #ffe66d; }
-        
         .rom-name {
             font-size: 1.1em;
             font-weight: bold;
@@ -151,7 +118,6 @@
             transform: scale(1.02);
             box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
         }
-        
         #emulator-overlay {
             display: none;
             position: fixed;
@@ -172,7 +138,6 @@
             border: none;
             border-radius: 8px;
             color: white;
-            font-size: 1em;
             cursor: pointer;
             z-index: 10000;
         }
@@ -181,15 +146,6 @@
             color: #00d4ff;
             font-size: 1.5em;
             text-align: center;
-        }
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
         }
         .status-box {
             margin-top: 20px;
@@ -210,10 +166,10 @@
             border-color: rgba(255, 71, 87, 0.5);
             color: #ff4757;
         }
-        .loading-scan {
-            text-align: center;
-            padding: 60px 20px;
-            color: #00d4ff;
+        .status-box.success {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: rgba(40, 167, 69, 0.5);
+            color: #28a745;
         }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
@@ -224,87 +180,64 @@
     <div class="container">
         <header>
             <h1>🎮 Teste de ROMs</h1>
-            <p class="subtitle">NJRBuild 2.5.27 (NeoGeo) + FBNeo (CPS/Midway)</p>
+            <p class="subtitle">Usando cores hospedados no repositório</p>
             
-            <div class="emulator-info">
-                <strong>🔧 Emuladores:</strong><br>
-                <span class="emulator-badge badge-neogeo">NJRBuild 2.5.27</span>
-                <span>→ Jogos NeoGeo</span><br><br>
-                <span class="emulator-badge badge-cps">FBNeo</span>
-                <span>→ Jogos CPS1/CPS2</span><br><br>
-                <span class="emulator-badge badge-midway">FBNeo</span>
-                <span>→ Jogos Midway</span>
+            <div class="cores-info">
+                <strong>📦 Cores disponíveis:</strong><br>
+                • FBNeo (FinalBurn Neo) - NeoGeo, CPS, Midway<br>
+                • MAME 2003 - Arcade clássico<br>
+                • MAME 2003 Plus - Arcade melhorado
             </div>
         </header>
 
-        <div class="stats" id="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="total-roms">0</div>
-                <div class="stat-label">Total de ROMs</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="total-neogeo">0</div>
-                <div class="stat-label">NeoGeo</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="total-cps">0</div>
-                <div class="stat-label">CPS</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="total-midway">0</div>
-                <div class="stat-label">Midway</div>
-            </div>
-        </div>
-
         <div class="controls">
-            <input type="text" class="search-box" id="search-rom" placeholder="🔍 Buscar ROM..." onkeyup="filterRoms()">
-        </div>
-
-        <div id="roms-container">
-            <div class="loading-scan">
-                <div class="loading">Carregando ROMs</div>
-                <p style="margin-top: 15px; color: #888;">Escaneando repositório...</p>
+            <div class="control-group">
+                <label>🔧 Selecionar Core</label>
+                <select id="core-select">
+                    <option value="fbneo">FBNeo (Recomendado)</option>
+                    <option value="mame2003">MAME 2003</option>
+                    <option value="mame2003_plus">MAME 2003 Plus</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>🔍 Buscar ROM</label>
+                <input type="text" id="search-rom" placeholder="Digite o nome..." onkeyup="filterRoms()">
             </div>
         </div>
+
+        <div id="roms-container"></div>
     </div>
 
     <div id="emulator-overlay">
         <button class="close-btn" onclick="closeEmulator()">✕ FECHAR</button>
-        <div class="loading" id="loading-text">Carregando</div>
+        <div class="loading" id="loading-text">Carregando...</div>
         <div class="status-box" id="status-box"></div>
     </div>
 
     <script>
         const REPO_BASE = 'https://raw.githubusercontent.com/Vdmtx/retroarchonline/main';
         const GITHUB_API = 'https://api.github.com/repos/Vdmtx/retroarchonline/contents';
-        
         let allRoms = [];
 
-        // NJRBuild 2.5.27 - Core para NeoGeo
-        // Usando CDN alternativo (jsdelivr) para evitar problemas de CORS
-        const NJRBUILD_CORE = {
-            name: 'njrbuild',
-            version: '2.5.27',
-            js: 'https://cdn.jsdelivr.net/gh/libretro/njrbuild-libretro@master/njrbuild_libretro.js',
-            wasm: 'https://cdn.jsdelivr.net/gh/libretro/njrbuild-libretro@master/njrbuild_libretro.wasm'
-        };
-
-        // FBNeo - Core para CPS e Midway
-        const FBNEO_CORE = {
-            name: 'fbneo',
-            js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.js',
-            wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.wasm'
-        };
-
-        // Fallback: usar cores do RetroArch CDN oficial
-        const RETROARCH_CDN = {
-            njrbuild: {
-                js: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/njrbuild_libretro.js',
-                wasm: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/njrbuild_libretro.wasm'
-            },
+        // Cores hospedados no repositório
+        const CORES = {
             fbneo: {
-                js: 'https://cdn.jsdelivr.net/gh/libretro/fbneo@master/fbneo_libretro.js',
-                wasm: 'https://cdn.jsdelivr.net/gh/libretro/fbneo@master/fbneo_libretro.wasm'
+                name: 'FBNeo',
+                js: `${REPO_BASE}/data/cores/fbneo_libretro.js`,
+                wasm: `${REPO_BASE}/data/cores/fbneo_libretro.wasm`,
+                data: `${REPO_BASE}/data/cores/fbneo-wasm.data`
+            },
+            mame2003: {
+                name: 'MAME 2003',
+                js: `${REPO_BASE}/data/cores/mame2003_libretro.js`,
+                wasm: `${REPO_BASE}/data/cores/mame2003_libretro.wasm`,
+                data: `${REPO_BASE}/data/cores/mame2003-legacy-wasm.data`
+            },
+            mame2003_plus: {
+                name: 'MAME 2003 Plus',
+                js: `${REPO_BASE}/data/cores/mame2003_plus_libretro.js`,
+                wasm: `${REPO_BASE}/data/cores/mame2003_plus_libretro.wasm`,
+                data: `${REPO_BASE}/data/cores/mame2003_plus-legacy-wasm.data`
             }
         };
 
@@ -313,45 +246,31 @@
         });
 
         async function loadAllRoms() {
-            try {
-                const systems = ['neogeo', 'cps', 'midway'];
-                
-                for (const system of systems) {
-                    try {
-                        const response = await fetch(`${GITHUB_API}/roms/${system}`);
-                        if (!response.ok) {
-                            console.warn(`Sistema ${system} não encontrado`);
-                            continue;
-                        }
-                        
-                        const files = await response.json();
-                        const roms = files.filter(f => f.type === 'file' && f.name.endsWith('.zip'));
-                        
-                        roms.forEach(rom => {
-                            allRoms.push({
-                                system: system,
-                                name: rom.name,
-                                size: rom.size,
-                                url: rom.download_url
-                            });
+            const systems = ['neogeo', 'cps', 'midway'];
+            const container = document.getElementById('roms-container');
+            container.innerHTML = '<div style="text-align: center; color: #00d4ff; padding: 40px;">Carregando ROMs...</div>';
+            
+            for (const system of systems) {
+                try {
+                    const response = await fetch(`${GITHUB_API}/roms/${system}`);
+                    if (!response.ok) continue;
+                    
+                    const files = await response.json();
+                    const roms = files.filter(f => f.type === 'file' && f.name.endsWith('.zip'));
+                    
+                    roms.forEach(rom => {
+                        allRoms.push({
+                            system: system,
+                            name: rom.name,
+                            size: rom.size
                         });
-                    } catch (e) {
-                        console.error(`Erro ao carregar ${system}:`, e);
-                    }
+                    });
+                } catch (e) {
+                    console.error(`Erro ao carregar ${system}:`, e);
                 }
-                
-                displayRoms();
-                updateStats();
-                
-            } catch (error) {
-                console.error('Erro:', error);
-                document.getElementById('roms-container').innerHTML = `
-                    <div style="text-align: center; color: #ff4757; padding: 40px;">
-                        <h2>❌ Erro ao carregar ROMs</h2>
-                        <p>${error.message}</p>
-                    </div>
-                `;
             }
+            
+            displayRoms();
         }
 
         function displayRoms(roms = allRoms) {
@@ -362,74 +281,46 @@
                 return;
             }
             
-            container.innerHTML = `
-                <div class="roms-grid">
-                    ${roms.map(rom => {
-                        const systemClass = `system-${rom.system}`;
-                        const emulatorName = rom.system === 'neogeo' ? 'NJRBuild 2.5.27' : 'FBNeo';
-                        
-                        return `
-                            <div class="rom-card" data-name="${rom.name.toLowerCase()}" data-system="${rom.system}">
-                                <div class="rom-header">
-                                    <span class="rom-system ${systemClass}">${rom.system.toUpperCase()}</span>
-                                    <span style="font-size: 0.8em; color: #888;">${emulatorName}</span>
-                                </div>
-                                <div class="rom-name">${rom.name.replace('.zip', '')}</div>
-                                <div class="rom-size">${formatFileSize(rom.size)}</div>
-                                <button class="test-btn" onclick="testRom('${rom.system}', '${rom.name}')">
-                                    ▶ TESTAR COM ${emulatorName.toUpperCase()}
-                                </button>
-                            </div>
-                        `;
-                    }).join('')}
+            container.innerHTML = `<div class="roms-grid">${roms.map(rom => `
+                <div class="rom-card" data-name="${rom.name.toLowerCase()}">
+                    <div class="rom-system system-${rom.system}">${rom.system.toUpperCase()}</div>
+                    <div class="rom-name">${rom.name.replace('.zip', '')}</div>
+                    <div class="rom-size">${formatFileSize(rom.size)}</div>
+                    <button class="test-btn" onclick="testRom('${rom.system}', '${rom.name}')">▶ TESTAR</button>
                 </div>
-            `;
-        }
-
-        function filterRoms() {
-            const search = document.getElementById('search-rom').value.toLowerCase();
-            const filtered = allRoms.filter(rom => rom.name.toLowerCase().includes(search));
-            displayRoms(filtered);
-        }
-
-        function updateStats() {
-            document.getElementById('total-roms').textContent = allRoms.length;
-            document.getElementById('total-neogeo').textContent = allRoms.filter(r => r.system === 'neogeo').length;
-            document.getElementById('total-cps').textContent = allRoms.filter(r => r.system === 'cps').length;
-            document.getElementById('total-midway').textContent = allRoms.filter(r => r.system === 'midway').length;
+            `).join('')}</div>`;
         }
 
         async function testRom(system, romFile) {
-            const core = system === 'neogeo' ? NJRBUILD_CORE : FBNEO_CORE;
+            const coreKey = document.getElementById('core-select').value;
+            const core = CORES[coreKey];
             
             const overlay = document.getElementById('emulator-overlay');
-            const loadingText = document.getElementById('loading-text');
             const statusBox = document.getElementById('status-box');
             
             overlay.classList.add('active');
-            loadingText.style.display = 'block';
-            statusBox.style.display = 'block';
-            statusBox.classList.remove('error');
+            statusBox.classList.remove('error', 'success');
             
-            let status = ` Sistema: ${system.toUpperCase()}\n ROM: ${romFile}\n🔧 Core: ${core.name.toUpperCase()}\n\n⏳ Carregando...`;
-            updateStatus(status);
+            let status = `🎮 Sistema: ${system.toUpperCase()}\n📦 ROM: ${romFile}\n🔧 Core: ${core.name}\n\n⏳ Verificando arquivos...`;
+            statusBox.textContent = status;
 
             try {
-                // Usar jsDelivr para evitar problemas de CORS do GitHub Raw
-                const romUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/roms/${system}/${encodeURIComponent(romFile)}`;
-                
+                // URLs das ROMs e BIOS
+                const romUrl = `${REPO_BASE}/roms/${system}/${encodeURIComponent(romFile)}`;
                 let biosUrl = null;
+                
                 if (system === 'neogeo') {
-                    biosUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/bios/neogeo.zip`;
+                    biosUrl = `${REPO_BASE}/bios/neogeo.zip`;
                     status += '\n🔌 BIOS: neogeo.zip';
                 } else if (system === 'cps') {
-                    biosUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/bios/qsound.zip`;
-                    status += '\n BIOS: qsound.zip';
+                    biosUrl = `${REPO_BASE}/bios/qsound.zip`;
+                    status += '\n🔌 BIOS: qsound.zip';
                 }
                 
-                updateStatus(status);
+                statusBox.textContent = status;
 
-                const launchConfig = {
+                // Configuração do Nostalgist com cores locais
+                const config = {
                     core: {
                         name: core.name,
                         js: core.js,
@@ -439,17 +330,15 @@
                 };
 
                 if (biosUrl) {
-                    launchConfig.bios = biosUrl;
+                    config.bios = biosUrl;
                 }
 
                 status += '\n\n🚀 Iniciando emulador...';
-                updateStatus(status);
+                statusBox.textContent = status;
+
+                const nostalgist = await Nostalgist.launch(config);
                 
-                console.log('Configuração:', launchConfig);
-                
-                const nostalgist = await Nostalgist.launch(launchConfig);
-                
-                status += '\n\n✅ EMULADOR INICIADO!\n\n' +
+                status += '\n\n✅ EMULADOR INICIADO COM SUCESSO!\n\n' +
                     '🎮 Controles:\n' +
                     '• Setas/WASD: Mover\n' +
                     '• X/Z: Botão A\n' +
@@ -459,19 +348,20 @@
                     '• 5: Insert Coin\n\n' +
                     '💡 Use o menu do emulador para salvar/carregar';
                 
-                updateStatus(status);
-                setTimeout(() => { loadingText.style.display = 'none'; }, 2000);
+                statusBox.classList.add('success');
+                statusBox.textContent = status;
 
             } catch (error) {
-                console.error('Erro completo:', error);
-                updateStatus(`❌ ERRO DETALHADO\n\nSistema: ${system}\nROM: ${romFile}\nCore: ${core.name}\n\nErro: ${error.message}\n\n🔍 Diagnóstico:\n• Core JS: ${core.js}\n• Core WASM: ${core.wasm}\n• ROM URL: ${romUrl}\n• BIOS URL: ${biosUrl || 'N/A'}\n\n💡 Possíveis causas:\n1. Core não encontrado no CDN\n2. ROM/BIOS não existe\n3. Problema de CORS\n4. Arquivo muito grande`, true);
+                console.error('Erro:', error);
+                statusBox.classList.add('error');
+                statusBox.textContent = `❌ ERRO\n\nSistema: ${system}\nROM: ${romFile}\nCore: ${core.name}\n\nErro: ${error.message}\n\n🔍 URLs:\n• Core JS: ${core.js}\n• Core WASM: ${core.wasm}\n• ROM: ${romUrl}\n• BIOS: ${biosUrl || 'N/A'}\n\n💡 Possíveis causas:\n1. Arquivos .js/.wasm não existem na pasta /data/cores/\n2. ROM não encontrada\n3. BIOS ausente\n4. Problema de CORS`;
             }
         }
 
-        function updateStatus(message, isError) {
-            const statusBox = document.getElementById('status-box');
-            statusBox.textContent = message;
-            if (isError) statusBox.classList.add('error');
+        function filterRoms() {
+            const search = document.getElementById('search-rom').value.toLowerCase();
+            const filtered = allRoms.filter(rom => rom.name.toLowerCase().includes(search));
+            displayRoms(filtered);
         }
 
         function closeEmulator() {
