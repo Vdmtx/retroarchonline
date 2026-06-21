@@ -101,7 +101,6 @@
             border-radius: 8px;
             padding: 15px;
             transition: all 0.3s ease;
-            cursor: pointer;
         }
         .rom-card:hover {
             border-color: #00d4ff;
@@ -199,10 +198,12 @@
             border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 8px;
             color: #00d4ff;
-            max-width: 600px;
+            max-width: 700px;
             white-space: pre-wrap;
             font-family: monospace;
-            font-size: 0.9em;
+            font-size: 0.85em;
+            max-height: 400px;
+            overflow-y: auto;
         }
         .status-box.error {
             background: rgba(255, 71, 87, 0.2);
@@ -226,7 +227,7 @@
             <p class="subtitle">NJRBuild 2.5.27 (NeoGeo) + FBNeo (CPS/Midway)</p>
             
             <div class="emulator-info">
-                <strong> Emuladores:</strong><br>
+                <strong>🔧 Emuladores:</strong><br>
                 <span class="emulator-badge badge-neogeo">NJRBuild 2.5.27</span>
                 <span>→ Jogos NeoGeo</span><br><br>
                 <span class="emulator-badge badge-cps">FBNeo</span>
@@ -279,19 +280,32 @@
         
         let allRoms = [];
 
-        // NJRBuild 2.5.27 para NeoGeo
+        // NJRBuild 2.5.27 - Core para NeoGeo
+        // Usando CDN alternativo (jsdelivr) para evitar problemas de CORS
         const NJRBUILD_CORE = {
             name: 'njrbuild',
             version: '2.5.27',
-            js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/njrbuild_libretro.js',
-            wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/njrbuild_libretro.wasm'
+            js: 'https://cdn.jsdelivr.net/gh/libretro/njrbuild-libretro@master/njrbuild_libretro.js',
+            wasm: 'https://cdn.jsdelivr.net/gh/libretro/njrbuild-libretro@master/njrbuild_libretro.wasm'
         };
 
-        // FBNeo para CPS e Midway
+        // FBNeo - Core para CPS e Midway
         const FBNEO_CORE = {
             name: 'fbneo',
             js: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.js',
             wasm: 'https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build/cores/fbneo_libretro.wasm'
+        };
+
+        // Fallback: usar cores do RetroArch CDN oficial
+        const RETROARCH_CDN = {
+            njrbuild: {
+                js: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/njrbuild_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/nicbarker/njrbuild@main/dist/njrbuild_libretro.wasm'
+            },
+            fbneo: {
+                js: 'https://cdn.jsdelivr.net/gh/libretro/fbneo@master/fbneo_libretro.js',
+                wasm: 'https://cdn.jsdelivr.net/gh/libretro/fbneo@master/fbneo_libretro.wasm'
+            }
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
@@ -305,7 +319,10 @@
                 for (const system of systems) {
                     try {
                         const response = await fetch(`${GITHUB_API}/roms/${system}`);
-                        if (!response.ok) continue;
+                        if (!response.ok) {
+                            console.warn(`Sistema ${system} não encontrado`);
+                            continue;
+                        }
                         
                         const files = await response.json();
                         const roms = files.filter(f => f.type === 'file' && f.name.endsWith('.zip'));
@@ -394,19 +411,20 @@
             statusBox.style.display = 'block';
             statusBox.classList.remove('error');
             
-            let status = `🎮 Sistema: ${system.toUpperCase()}\n📦 ROM: ${romFile}\n🔧 Core: ${core.name.toUpperCase()}\n\n⏳ Carregando...`;
+            let status = ` Sistema: ${system.toUpperCase()}\n ROM: ${romFile}\n🔧 Core: ${core.name.toUpperCase()}\n\n⏳ Carregando...`;
             updateStatus(status);
 
             try {
-                const romUrl = `${REPO_BASE}/roms/${system}/${encodeURIComponent(romFile)}`;
+                // Usar jsDelivr para evitar problemas de CORS do GitHub Raw
+                const romUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/roms/${system}/${encodeURIComponent(romFile)}`;
                 
                 let biosUrl = null;
                 if (system === 'neogeo') {
-                    biosUrl = `${REPO_BASE}/bios/neogeo.zip`;
+                    biosUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/bios/neogeo.zip`;
                     status += '\n🔌 BIOS: neogeo.zip';
                 } else if (system === 'cps') {
-                    biosUrl = `${REPO_BASE}/bios/qsound.zip`;
-                    status += '\n🔌 BIOS: qsound.zip';
+                    biosUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/bios/qsound.zip`;
+                    status += '\n BIOS: qsound.zip';
                 }
                 
                 updateStatus(status);
@@ -427,6 +445,8 @@
                 status += '\n\n🚀 Iniciando emulador...';
                 updateStatus(status);
                 
+                console.log('Configuração:', launchConfig);
+                
                 const nostalgist = await Nostalgist.launch(launchConfig);
                 
                 status += '\n\n✅ EMULADOR INICIADO!\n\n' +
@@ -443,8 +463,8 @@
                 setTimeout(() => { loadingText.style.display = 'none'; }, 2000);
 
             } catch (error) {
-                console.error('Erro:', error);
-                updateStatus(`❌ ERRO\n\nSistema: ${system}\nROM: ${romFile}\nCore: ${core.name}\n\nErro: ${error.message}\n\n💡 Verifique se:\n• A ROM existe no repositório\n• A BIOS está disponível\n• Sua conexão está estável`, true);
+                console.error('Erro completo:', error);
+                updateStatus(`❌ ERRO DETALHADO\n\nSistema: ${system}\nROM: ${romFile}\nCore: ${core.name}\n\nErro: ${error.message}\n\n🔍 Diagnóstico:\n• Core JS: ${core.js}\n• Core WASM: ${core.wasm}\n• ROM URL: ${romUrl}\n• BIOS URL: ${biosUrl || 'N/A'}\n\n💡 Possíveis causas:\n1. Core não encontrado no CDN\n2. ROM/BIOS não existe\n3. Problema de CORS\n4. Arquivo muito grande`, true);
             }
         }
 
