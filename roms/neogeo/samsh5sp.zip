@@ -1,0 +1,18 @@
+{
+  "name": "samsh5sp.zip",
+  "path": "roms/samsh5sp.zip",
+  "sha": "89ef9970c59085ead5daa81b9d6752a4ff364ee4",
+  "size": 83033290,
+  "url": "https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms/samsh5sp.zip?ref=main",
+  "html_url": "https://github.com/Vdmtx/retroarchonline/blob/main/roms/samsh5sp.zip",
+  "git_url": "https://api.github.com/repos/Vdmtx/retroarchonline/git/blobs/89ef9970c59085ead5daa81b9d6752a4ff364ee4",
+  "download_url": "https://raw.githubusercontent.com/Vdmtx/retroarchonline/main/roms/samsh5sp.zip",
+  "type": "file",
+  "content": "",
+  "encoding": "none",
+  "_links": {
+    "self": "https://api.github.com/repos/Vdmtx/retroarchonline/contents/roms/samsh5sp.zip?ref=main",
+    "git": "https://api.github.com/repos/Vdmtx/retroarchonline/git/blobs/89ef9970c59085ead5daa81b9d6752a4ff364ee4",
+    "html": "https://github.com/Vdmtx/retroarchonline/blob/main/roms/samsh5sp.zip"
+  }
+}
