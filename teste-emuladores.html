@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste de ROMs - FBNeo</title>
+    <title>Teste de ROMs - Multi-Sistema</title>
     <script src="https://cdn.jsdelivr.net/npm/nostalgist@0.19.2/dist/nostalgist.umd.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -81,6 +81,7 @@
         .system-neogeo { background: rgba(255, 107, 107, 0.3); color: #ff6b6b; }
         .system-cps { background: rgba(78, 205, 196, 0.3); color: #4ecdc4; }
         .system-midway { background: rgba(255, 230, 109, 0.3); color: #ffe66d; }
+        .system-atomiswave { background: rgba(162, 89, 255, 0.3); color: #a259ff; }
         .rom-name {
             font-size: 1.1em;
             font-weight: bold;
@@ -181,12 +182,12 @@
     <div class="container">
         <header>
             <h1>🎮 Teste de ROMs</h1>
-            <p class="subtitle">FBNeo - Arcade (NeoGeo, CPS, Midway)</p>
+            <p class="subtitle">Multi-Sistema: CPS, Midway, Atomiswave, NeoGeo</p>
             
             <div class="info-box">
                 <strong>ℹ️ Informações:</strong><br>
-                • Core: FBNeo (FinalBurn Neo)<br>
-                • Compatível: NeoGeo, CPS1, CPS2, CPS3, Midway<br>
+                • CPS/Midway/Atomiswave → Core: <strong>fbneo</strong> (CPS/Midway) e <strong>naomi</strong> (Atomiswave)<br>
+                • NeoGeo → Core: <strong>fbneo</strong><br>
                 • BIOS: Carregada automaticamente quando necessário
             </div>
         </header>
@@ -208,36 +209,143 @@
     </div>
 
     <script>
-        const REPO_BASE = 'https://raw.githubusercontent.com/Vdmtx/retroarchonline/main';
-        const GITHUB_API = 'https://api.github.com/repos/Vdmtx/retroarchonline/contents';
+        /* ============================================================
+           CONFIGURAÇÃO GLOBAL
+           ============================================================ */
+        const REPO_OWNER = 'Vdmtx';
+        const REPO_NAME = 'retroarchonline';
+        const REPO_BRANCH = 'main';
+        const GITHUB_API = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
+        const CDN_BASE = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@${REPO_BRANCH}`;
+
+        /* ============================================================
+           MAPEAMENTO DE SISTEMAS
+           ============================================================ */
+        const SYSTEMS = {
+            cps: {
+                core: 'fbneo',
+                bios: `${CDN_BASE}/bios/qsound.zip`,
+                color: 'system-cps',
+                label: 'CPS (1/2/3)'
+            },
+            midway: {
+                core: 'fbneo',
+                bios: null,
+                color: 'system-midway',
+                label: 'Midway'
+            },
+            atomiswave: {
+                core: 'naomi',
+                bios: `${CDN_BASE}/bios/awbios.zip`,
+                color: 'system-atomiswave',
+                label: 'Atomiswave'
+            },
+            neogeo: {
+                core: 'fbneo',
+                bios: `${CDN_BASE}/bios/neogeo.zip`,
+                color: 'system-neogeo',
+                label: 'NeoGeo'
+            }
+        };
+
+        /* ============================================================
+           DETECÇÃO AUTOMÁTICA DE SISTEMA POR PADRÕES DE NOMES
+           ============================================================ */
+        function detectSystemFromFilename(filename) {
+            const name = filename.toLowerCase().replace('.zip', '');
+            
+            // CPS - Capcom Play System
+            if (/^(sf|street\s*fighter|megaman|mvc|mars|capcom)/.test(name) || 
+                /(^sf|sf2|sfiii|sfa|sfz|mvc|megaman)/.test(name)) {
+                return 'cps';
+            }
+            
+            // Midway - Mortal Kombat etc
+            if (/^(mk|mortalkombat|umk|nba|nfl|wwf)/.test(name)) {
+                return 'midway';
+            }
+            
+            // NeoGeo - King of Fighters, Metal Slug, etc
+            if (/^(kof|metal|slug|garou|rbff|samsh|fatfury|aof|artof|king|neo)/.test(name) ||
+                /^(mslug|kof|garou|rbff|samsho|fatfur|aof)/.test(name)) {
+                return 'neogeo';
+            }
+            
+            // Atomiswave
+            if (/^(atomis|aw)/.test(name)) {
+                return 'atomiswave';
+            }
+            
+            // Default: tenta detectar por palavras-chave
+            if (/^(sf|street.*fighter|capcom)/.test(name)) return 'cps';
+            if (/^(mk|mortal.*kombat)/.test(name)) return 'midway';
+            if (/^(kof|king.*fighters|metal.*slug)/.test(name)) return 'neogeo';
+            
+            return 'neogeo'; // Default para NeoGeo (mais comum)
+        }
+
         let allRoms = [];
 
+        /* ============================================================
+           INICIALIZAÇÃO
+           ============================================================ */
         window.addEventListener('DOMContentLoaded', async () => {
             await loadAllRoms();
         });
 
+        /* ============================================================
+           loadAllRoms()
+           Verifica se há subpastas organizadas, senão lê da raiz
+           ============================================================ */
         async function loadAllRoms() {
-            const systems = ['neogeo', 'cps', 'midway'];
             const container = document.getElementById('roms-container');
             container.innerHTML = '<div style="text-align: center; color: #00d4ff; padding: 40px;">⏳ Carregando ROMs...</div>';
             
-            for (const system of systems) {
+            // Primeiro tenta carregar de subpastas organizadas
+            for (const [systemKey, systemCfg] of Object.entries(SYSTEMS)) {
                 try {
-                    const response = await fetch(`${GITHUB_API}/roms/${system}`);
-                    if (!response.ok) continue;
-                    
-                    const files = await response.json();
-                    const roms = files.filter(f => f.type === 'file' && f.name.endsWith('.zip'));
-                    
-                    roms.forEach(rom => {
-                        allRoms.push({
-                            system: system,
-                            name: rom.name,
-                            size: rom.size
+                    const response = await fetch(`${GITHUB_API}/roms/${systemKey}`);
+                    if (response.ok) {
+                        const files = await response.json();
+                        const roms = files.filter(f => f.type === 'file' && f.name.endsWith('.zip'));
+                        
+                        roms.forEach(rom => {
+                            allRoms.push({
+                                system: systemKey,
+                                name: rom.name,
+                                size: rom.size,
+                                path: `roms/${systemKey}/${rom.name}`
+                            });
                         });
-                    });
+                        console.log(`✓ Carregadas ${roms.length} ROMs de /roms/${systemKey}/`);
+                    }
                 } catch (e) {
-                    console.error(`Erro ao carregar ${system}:`, e);
+                    console.log(`✗ Pasta /roms/${systemKey}/ não encontrada`);
+                }
+            }
+            
+            // Se não encontrou ROMs em subpastas, tenta carregar da raiz
+            if (allRoms.length === 0) {
+                try {
+                    console.log('Tentando carregar ROMs da raiz /roms/...');
+                    const response = await fetch(`${GITHUB_API}/roms`);
+                    if (response.ok) {
+                        const files = await response.json();
+                        const roms = files.filter(f => f.type === 'file' && f.name.endsWith('.zip'));
+                        
+                        roms.forEach(rom => {
+                            const detectedSystem = detectSystemFromFilename(rom.name);
+                            allRoms.push({
+                                system: detectedSystem,
+                                name: rom.name,
+                                size: rom.size,
+                                path: `roms/${rom.name}`
+                            });
+                        });
+                        console.log(`✓ Carregadas ${roms.length} ROMs da raiz /roms/`);
+                    }
+                } catch (e) {
+                    console.error('Erro ao carregar ROMs da raiz:', e);
                 }
             }
             
@@ -245,6 +353,9 @@
             updateStats();
         }
 
+        /* ============================================================
+           displayRoms(roms)
+           ============================================================ */
         function displayRoms(roms = allRoms) {
             const container = document.getElementById('roms-container');
             
@@ -253,51 +364,66 @@
                 return;
             }
             
-            container.innerHTML = `<div class="roms-grid">${roms.map(rom => `
+            container.innerHTML = `<div class="roms-grid">${roms.map(rom => {
+                const cfg = SYSTEMS[rom.system];
+                return `
                 <div class="rom-card" data-name="${rom.name.toLowerCase()}">
-                    <div class="rom-system system-${rom.system}">${rom.system.toUpperCase()}</div>
+                    <div class="rom-system ${cfg.color}">${cfg.label}</div>
                     <div class="rom-name">${rom.name.replace('.zip', '')}</div>
-                    <div class="rom-size">${formatFileSize(rom.size)}</div>
+                    <div class="rom-size">${formatFileSize(rom.size)} • Core: ${cfg.core}</div>
                     <button class="test-btn" onclick="testRom('${rom.system}', '${rom.name}')">▶ TESTAR</button>
                 </div>
-            `).join('')}</div>`;
+            `}).join('')}</div>`;
         }
 
+        /* ============================================================
+           updateStats()
+           ============================================================ */
         function updateStats() {
-            const total = allRoms.length;
-            const neogeo = allRoms.filter(r => r.system === 'neogeo').length;
-            const cps = allRoms.filter(r => r.system === 'cps').length;
-            const midway = allRoms.filter(r => r.system === 'midway').length;
-            
             const header = document.querySelector('header');
+            const existingStats = header.querySelector('.stats-grid');
+            if (existingStats) existingStats.remove();
+
             const stats = document.createElement('div');
-            stats.style.cssText = 'display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;';
-            stats.innerHTML = `
+            stats.className = 'stats-grid';
+            stats.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 15px;';
+            
+            let html = `
                 <div style="background: rgba(0,212,255,0.1); padding: 10px; border-radius: 6px; text-align: center;">
-                    <div style="font-size: 1.5em; color: #00d4ff; font-weight: bold;">${total}</div>
+                    <div style="font-size: 1.5em; color: #00d4ff; font-weight: bold;">${allRoms.length}</div>
                     <div style="font-size: 0.8em; color: #888;">Total</div>
-                </div>
-                <div style="background: rgba(255,107,107,0.1); padding: 10px; border-radius: 6px; text-align: center;">
-                    <div style="font-size: 1.5em; color: #ff6b6b; font-weight: bold;">${neogeo}</div>
-                    <div style="font-size: 0.8em; color: #888;">NeoGeo</div>
-                </div>
-                <div style="background: rgba(78,205,196,0.1); padding: 10px; border-radius: 6px; text-align: center;">
-                    <div style="font-size: 1.5em; color: #4ecdc4; font-weight: bold;">${cps}</div>
-                    <div style="font-size: 0.8em; color: #888;">CPS</div>
-                </div>
-                <div style="background: rgba(255,230,109,0.1); padding: 10px; border-radius: 6px; text-align: center;">
-                    <div style="font-size: 1.5em; color: #ffe66d; font-weight: bold;">${midway}</div>
-                    <div style="font-size: 0.8em; color: #888;">Midway</div>
-                </div>
-            `;
+                </div>`;
+            
+            for (const [key, cfg] of Object.entries(SYSTEMS)) {
+                const count = allRoms.filter(r => r.system === key).length;
+                if (count > 0) {
+                    const colorMap = {
+                        'system-cps': '#4ecdc4',
+                        'system-midway': '#ffe66d',
+                        'system-atomiswave': '#a259ff',
+                        'system-neogeo': '#ff6b6b'
+                    };
+                    html += `
+                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; text-align: center;">
+                            <div style="font-size: 1.5em; color: ${colorMap[cfg.color]}; font-weight: bold;">${count}</div>
+                            <div style="font-size: 0.8em; color: #888;">${cfg.label}</div>
+                        </div>`;
+                }
+            }
+            
+            stats.innerHTML = html;
             header.appendChild(stats);
         }
 
+        /* ============================================================
+           testRom(system, romFile)
+           ============================================================ */
         async function testRom(system, romFile) {
             const overlay = document.getElementById('emulator-overlay');
             const loadingText = document.getElementById('loading-text');
             const statusBox = document.getElementById('status-box');
             const progressFill = document.getElementById('progress-fill');
+            const cfg = SYSTEMS[system];
             
             overlay.classList.add('active');
             loadingText.style.display = 'block';
@@ -305,41 +431,66 @@
             statusBox.classList.remove('error');
             progressFill.style.width = '0%';
             
-            let status = `🎮 Sistema: ${system.toUpperCase()}\n📦 ROM: ${romFile}\n🔧 Core: FBNeo\n\n⏳ Preparando...`;
+            let status = `🎮 Sistema: ${cfg.label}\n📦 ROM: ${romFile}\n🔧 Core: ${cfg.core}\n\n⏳ Verificando arquivos...`;
             statusBox.textContent = status;
             setProgress(10);
 
             try {
-                // Usar jsDelivr para evitar problemas de CORS
-                const romUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/roms/${system}/${encodeURIComponent(romFile)}`;
+                // Verifica se a ROM existe
+                const romUrl = `${CDN_BASE}/roms/${encodeURIComponent(romFile)}`;
                 
-                let biosUrl = null;
-                if (system === 'neogeo') {
-                    biosUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/bios/neogeo.zip`;
-                    status += '\n🔌 BIOS: neogeo.zip';
-                } else if (system === 'cps') {
-                    biosUrl = `https://cdn.jsdelivr.net/gh/Vdmtx/retroarchonline@main/bios/qsound.zip`;
-                    status += '\n🔌 BIOS: qsound.zip';
+                status += `\n🔗 URL: ${romUrl}`;
+                statusBox.textContent = status;
+                setProgress(20);
+                
+                // Testa se o arquivo está acessível
+                try {
+                    const testResponse = await fetch(romUrl, {method: 'HEAD'});
+                    if (!testResponse.ok) {
+                        throw new Error(`ROM não encontrada (HTTP ${testResponse.status})`);
+                    }
+                    status += '\n✓ ROM acessível';
+                } catch (e) {
+                    throw new Error(`ROM inacessível: ${e.message}`);
+                }
+                
+                setProgress(30);
+                
+                if (cfg.bios) {
+                    status += `\n🔌 BIOS: ${cfg.bios.split('/').pop()}`;
+                    try {
+                        const biosTest = await fetch(cfg.bios, {method: 'HEAD'});
+                        if (biosTest.ok) {
+                            status += ' ✓';
+                        } else {
+                            status += ' ✗ (opcional)';
+                        }
+                    } catch (e) {
+                        status += ' ✗ (opcional)';
+                    }
+                } else {
+                    status += '\n🔌 BIOS: não necessária';
                 }
                 
                 statusBox.textContent = status;
-                setProgress(30);
+                setProgress(40);
 
                 status += '\n\n🚀 Carregando emulador...';
                 statusBox.textContent = status;
-                setProgress(50);
+                setProgress(60);
 
-                // Configuração simplificada - usa FBNeo automático
                 const config = {
-                    core: 'fbneo',
+                    core: cfg.core,
                     rom: romUrl
                 };
 
-                if (biosUrl) {
-                    config.bios = biosUrl;
+                if (cfg.bios) {
+                    config.bios = cfg.bios;
                 }
 
-                // Timeout de 60 segundos
+                // Configurações adicionais para melhor compatibilidade
+                config.system = system;
+
                 const loadPromise = Nostalgist.launch(config);
                 const timeoutPromise = new Promise((_, reject) => {
                     setTimeout(() => reject(new Error('Timeout: Emulador demorou mais de 60 segundos')), 60000);
@@ -364,25 +515,37 @@
                 console.error('Erro:', error);
                 setProgress(0);
                 statusBox.classList.add('error');
-                statusBox.textContent = `❌ ERRO\n\nSistema: ${system}\nROM: ${romFile}\n\nErro: ${error.message}\n\n💡 Soluções:\n1. Verifique se a ROM existe\n2. Confirme a BIOS (se necessário)\n3. Tente outro navegador\n4. Limpe o cache (Ctrl+F5)`;
+                statusBox.textContent = `❌ ERRO\n\nSistema: ${cfg.label}\nROM: ${romFile}\nCore: ${cfg.core}\n\nErro: ${error.message}\n\n💡 Soluções:\n1. Verifique sua conexão\n2. Tente outro navegador\n3. Limpe o cache (Ctrl+F5)\n4. Verifique se o repositório está acessível`;
             }
         }
 
+        /* ============================================================
+           setProgress(percent)
+           ============================================================ */
         function setProgress(percent) {
             document.getElementById('progress-fill').style.width = percent + '%';
         }
 
+        /* ============================================================
+           filterRoms()
+           ============================================================ */
         function filterRoms() {
             const search = document.getElementById('search-rom').value.toLowerCase();
             const filtered = allRoms.filter(rom => rom.name.toLowerCase().includes(search));
             displayRoms(filtered);
         }
 
+        /* ============================================================
+           closeEmulator()
+           ============================================================ */
         function closeEmulator() {
             document.getElementById('emulator-overlay').classList.remove('active');
             location.reload();
         }
 
+        /* ============================================================
+           formatFileSize(bytes)
+           ============================================================ */
         function formatFileSize(bytes) {
             if (!bytes) return '0 Bytes';
             const k = 1024;
