@@ -8,6 +8,10 @@ if(!player.includes("https://cdn.emulatorjs.org/stable/data/"))throw new Error("
 if(!player.includes("EJS_cacheConfig={enabled:false")||!player.includes("EJS_disableLocalStorage=true"))throw new Error("Player permite armazenamento persistente");
 if(!player.includes("EJS_onGameStart=()=>revealGame()")||!player.includes("Mostrar jogo")||!styles.includes(".player-message[hidden]"))throw new Error("Player não possui proteção para liberar a tela após iniciar");
 if(player.includes("game.children.length>0"))throw new Error("Player libera a tela antes do jogo iniciar");
+if(!player.includes("EJS_gameParentUrl=new URL(selected.bios")||player.includes("EJS_biosUrl=new URL(selected.bios"))throw new Error("ROM-pai do Neo Geo não está ligada ao FBNeo corretamente");
+if(!player.includes("EJS_VirtualGamepadSettings=["))throw new Error("Controle arcade móvel personalizado ausente");
+for(let button=1;button<=6;button++)if(!player.includes(`id:"arcade-${button}"`))throw new Error(`Botão arcade ${button} ausente`);
+if(!player.includes('text:"Ficha",id:"select"')||!player.includes('text:"Start",id:"start"'))throw new Error("Ficha ou Start ausente do controle móvel");
 if([index,player,app].some(text=>text.includes("api.github.com")||text.includes("/latest/data/")))throw new Error("Dependência instável detectada");
 if(!Array.isArray(catalog.games)||catalog.games.length<1)throw new Error("Catálogo vazio");
 const ids=new Set(),paths=new Set();
