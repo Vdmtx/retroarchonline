@@ -9,4 +9,6 @@ if([index,player,app].some(text=>text.includes("api.github.com")||text.includes(
 if(!Array.isArray(catalog.games)||catalog.games.length<1)throw new Error("Catálogo vazio");
 const ids=new Set(),paths=new Set();
 for(const game of catalog.games){if(!game.id||!game.title||!game.system||!game.core||!game.path||!game.size)throw new Error(`Entrada incompleta: ${JSON.stringify(game)}`);if(ids.has(game.id))throw new Error(`ID duplicado: ${game.id}`);ids.add(game.id);if(paths.has(game.path))throw new Error(`Caminho duplicado: ${game.path}`);paths.add(game.path);if(!fs.existsSync(game.path))throw new Error(`ROM ausente: ${game.path}`);if(fs.statSync(game.path).size<65536)throw new Error(`Arquivo inválido ou incompleto: ${game.path}`);if(game.bios&&!fs.existsSync(game.bios))throw new Error(`BIOS ausente: ${game.bios}`)}
+const allowedCores=new Set(["fbneo","fbalpha2012_cps1","fbalpha2012_cps2","mame2003_plus"]);
+for(const game of catalog.games)if(!allowedCores.has(game.core))throw new Error(`Núcleo desconhecido: ${game.core}`);
 console.log(`Validação concluída: ${catalog.games.length} jogos, interface móvel e caminhos íntegros.`);

@@ -36,6 +36,7 @@
     start.addEventListener("click",()=>{if(!selected)return;start.disabled=true;start.textContent="Carregando…";line.hidden=false;messageText.textContent=selected.size>65000000?"Este é um arquivo grande. No 4G, o carregamento pode demorar e consumir muitos dados.":"Baixando o jogo e preparando o emulador…";
       window.EJS_player="#game";window.EJS_core=selected.core;window.EJS_gameName=selected.id;window.EJS_gameUrl=new URL(selected.path,document.baseURI).href;window.EJS_pathtodata="https://cdn.emulatorjs.org/stable/data/";window.EJS_startOnLoaded=true;window.EJS_fullscreenOnLoaded=false;window.EJS_language="pt-BR";window.EJS_disableAutoLang=true;window.EJS_volume=.7;window.EJS_askBeforeExit=false;if(selected.bios)window.EJS_biosUrl=new URL(selected.bios,document.baseURI).href;
       window.EJS_ready=()=>{message.hidden=true};window.EJS_onGameStart=()=>{message.hidden=true};
+      const observer=new MutationObserver(()=>{const text=document.querySelector("#game")?.textContent||"";if(/falha ao iniciar|failed to start/i.test(text)){observer.disconnect();fail("A ROM não iniciou com o núcleo configurado. Ela será marcada para revisão, sem travar o restante do catálogo.")}});observer.observe(document.querySelector("#game"),{childList:true,subtree:true,characterData:true});
       const loader=document.createElement("script");loader.src="https://cdn.emulatorjs.org/stable/data/loader.js";loader.onerror=()=>fail("O serviço do emulador não respondeu. Verifique sua internet e tente novamente.");document.body.appendChild(loader);
     });
   </script>
