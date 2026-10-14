@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR" class="player-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#030406">
+  <title>Carregando jogo…</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="player-page">
+  <main class="player-shell">
+    <header class="player-bar">
+      <a class="back-btn" href="index.html" aria-label="Voltar ao catálogo">← Voltar</a>
+      <div class="player-title"><strong id="game-title">Preparando jogo</strong><small id="game-system">Arcade Vault</small></div>
+      <span class="rotate-hint">Melhor experiência na horizontal</span>
+    </header>
+    <section class="game-stage">
+      <div id="game"></div>
+      <div class="player-message" id="player-message">
+        <div>
+          <p class="eyebrow">PRONTO PARA CARREGAR</p>
+          <h1 id="message-title">Preparando…</h1>
+          <p id="message-text">O arquivo será baixado somente depois que você tocar em iniciar.</p>
+          <button class="play-btn" id="start-game" type="button" disabled>Iniciar jogo</button>
+          <div class="loading-line" id="loading-line" hidden><i></i></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const params=new URLSearchParams(location.search),id=params.get("id");
+    const title=document.querySelector("#game-title"),system=document.querySelector("#game-system"),message=document.querySelector("#player-message"),messageTitle=document.querySelector("#message-title"),messageText=document.querySelector("#message-text"),start=document.querySelector("#start-game"),line=document.querySelector("#loading-line");
+    const systemNames={capcom:"Capcom",midway:"Midway",neogeo:"Neo Geo"};let selected;
+    function fail(text){messageTitle.textContent="Não foi possível abrir";messageText.textContent=text;start.hidden=true;line.hidden=true}
+    fetch("catalog.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error();return r.json()}).then(data=>{selected=data.games.find(game=>game.id===id);if(!selected){fail("Esse jogo não existe no catálogo atual.");return}title.textContent=selected.title;system.textContent=`${systemNames[selected.system]||selected.system} · ${Math.round(selected.size/1048576)} MB`;messageTitle.textContent=selected.title;document.title=`${selected.title} · Arcade Vault`;start.disabled=false}).catch(()=>fail("O catálogo está indisponível. Volte e atualize a página."));
+    start.addEventListener("click",()=>{if(!selected)return;start.disabled=true;start.textContent="Carregando…";line.hidden=false;messageText.textContent=selected.size>65000000?"Este é um arquivo grande. No 4G, o carregamento pode demorar e consumir muitos dados.":"Baixando o jogo e preparando o emulador…";
+      window.EJS_player="#game";window.EJS_core=selected.core;window.EJS_gameName=selected.id;window.EJS_gameUrl=new URL(selected.path,document.baseURI).href;window.EJS_pathtodata="https://cdn.emulatorjs.org/stable/data/";window.EJS_startOnLoaded=true;window.EJS_fullscreenOnLoaded=false;window.EJS_language="pt-BR";window.EJS_disableAutoLang=true;window.EJS_volume=.7;window.EJS_askBeforeExit=false;if(selected.bios)window.EJS_biosUrl=new URL(selected.bios,document.baseURI).href;
+      window.EJS_ready=()=>{message.hidden=true};window.EJS_onGameStart=()=>{message.hidden=true};
+      const loader=document.createElement("script");loader.src="https://cdn.emulatorjs.org/stable/data/loader.js";loader.onerror=()=>fail("O serviço do emulador não respondeu. Verifique sua internet e tente novamente.");document.body.appendChild(loader);
+    });
+  </script>
+</body>
+</html>

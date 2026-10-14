@@ -1,147 +1,47 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Arcade Library</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%); 
-            color: #fff; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            padding: 40px; 
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        h1 { 
-            color: #00ff88; 
-            text-align: center; 
-            margin-bottom: 10px; 
-            font-size: 48px; 
-            text-shadow: 0 0 30px rgba(0,255,136,0.5); 
-        }
-        .subtitle {
-            color: #888;
-            text-align: center;
-            margin-bottom: 50px;
-            font-size: 16px;
-        }
-        .menu-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 30px; 
-            max-width: 1200px; 
-            width: 100%;
-        }
-        .menu-card { 
-            background: linear-gradient(145deg, #1a1a2e, #16213e); 
-            border: 3px solid #333; 
-            border-radius: 20px; 
-            padding: 40px; 
-            text-align: center; 
-            cursor: pointer; 
-            transition: all 0.3s;
-            text-decoration: none;
-            color: #fff;
-            display: block;
-            position: relative;
-            overflow: hidden;
-        }
-        .menu-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s;
-        }
-        .menu-card:hover::before {
-            left: 100%;
-        }
-        .menu-card:hover { 
-            transform: translateY(-10px) scale(1.02); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-        .menu-card.cps { border-color: #0088ff; }
-        .menu-card.cps:hover { border-color: #00aaff; box-shadow: 0 20px 40px rgba(0,136,255,0.3); }
-        .menu-card.midway { border-color: #ff0088; }
-        .menu-card.midway:hover { border-color: #ff00aa; box-shadow: 0 20px 40px rgba(255,0,136,0.3); }
-        .menu-card.neogeo { border-color: #ff8800; }
-        .menu-card.neogeo:hover { border-color: #ffaa00; box-shadow: 0 20px 40px rgba(255,136,0,0.3); }
-        .menu-card.atomiswave { border-color: #00aaff; }
-        .menu-card.atomiswave:hover { border-color: #00ccff; box-shadow: 0 20px 40px rgba(0,170,255,0.3); }
-        .menu-card.admin { border-color: #00ff88; }
-        .menu-card.admin:hover { border-color: #00ff88; box-shadow: 0 20px 40px rgba(0,255,136,0.3); }
-        .menu-icon { font-size: 80px; margin-bottom: 20px; }
-        .menu-title { font-size: 28px; font-weight: bold; margin-bottom: 15px; }
-        .menu-desc { color: #888; font-size: 14px; line-height: 1.6; }
-        .status { 
-            display: inline-block; 
-            padding: 5px 15px; 
-            border-radius: 20px; 
-            font-size: 12px; 
-            margin-top: 20px; 
-            font-weight: bold;
-        }
-        .status.ok { background: #00ff8833; color: #00ff88; }
-        .status.warn { background: #ff880033; color: #ffaa00; }
-        .footer {
-            margin-top: 50px;
-            color: #666;
-            text-align: center;
-            font-size: 12px;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090b12">
+  <meta name="description" content="Biblioteca pessoal de jogos arcade, otimizada para celulares.">
+  <title>Arcade Vault</title>
+  <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
-    <h1>🎮 ARCADE LIBRARY</h1>
-    <p class="subtitle">Sua coleção de jogos arcade online</p>
-    
-    <div class="menu-grid">
-        <a href="capcom.html" class="menu-card cps">
-            <div class="menu-icon">👊</div>
-            <div class="menu-title">CAPCOM</div>
-            <div class="menu-desc">CPS-2 • CPS-3<br>Street Fighter • Marvel vs Capcom • X-Men<br>Mega Man • 1944</div>
-            <span class="status ok">✅ FUNCIONANDO</span>
-        </a>
-        
-        <a href="midway.html" class="menu-card midway">
-            <div class="menu-icon">🥋</div>
-            <div class="menu-title">MIDWAY</div>
-            <div class="menu-desc">Mortal Kombat • NBA Jam<br>Cruis'n • Hydro Thunder<br>Rampage • War Final</div>
-            <span class="status ok">✅ FUNCIONANDO</span>
-        </a>
-        
-        <a href="neogeo.html" class="menu-card neogeo">
-            <div class="menu-icon">🔥</div>
-            <div class="menu-title">NEO GEO</div>
-            <div class="menu-desc">King of Fighters • Metal Slug<br>Samurai Shodown • Fatal Fury<br>Garou • Last Blade</div>
-            <span class="status warn">⚠️ BIOS INCOMPLETA</span>
-        </a>
-        
-        <a href="atomiswave.html" class="menu-card atomiswave">
-            <div class="menu-icon">🌊</div>
-            <div class="menu-title">ATOMISWAVE</div>
-            <div class="menu-desc">Samurai Shodown 6<br>Guilty Gear XX<br>Neo Geo Battle Coliseum<br>King of Fighters XI</div>
-            <span class="status warn">⚠️ BIOS NECESSÁRIA</span>
-        </a>
-        
-        <a href="admin.html" class="menu-card admin">
-            <div class="menu-icon">🔧</div>
-            <div class="menu-title">ADMIN</div>
-            <div class="menu-desc">Gerenciador de Arquivos<br>Upload • Mover • Deletar<br>Organize suas ROMs</div>
-            <span class="status ok">🔐 RESTRITO</span>
-        </a>
-    </div>
-    
-    <div class="footer">
-        <p>Arcade Library • Powered by EmulatorJS • GitHub Pages</p>
-    </div>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Arcade Vault — início">
+      <span class="brand-mark" aria-hidden="true">AV</span>
+      <span><strong>ARCADE VAULT</strong><small>Biblioteca pessoal</small></span>
+    </a>
+    <span class="status"><i></i> Catálogo local</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">JOGOS CLÁSSICOS · DIRETO NO NAVEGADOR</p>
+      <h1>Sua coleção, sem menus confusos.</h1>
+      <p>Escolha um jogo, vire o celular na horizontal e jogue. O arquivo só é carregado quando você mandar iniciar.</p>
+    </section>
+
+    <section class="library" aria-labelledby="library-title">
+      <div class="library-head">
+        <div><p class="eyebrow">BIBLIOTECA</p><h2 id="library-title">Jogos disponíveis</h2></div>
+        <strong id="result-count" aria-live="polite">Carregando…</strong>
+      </div>
+
+      <div class="toolbar">
+        <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Buscar jogo" autocomplete="off"></label>
+        <div class="filters" id="filters" aria-label="Filtrar por sistema"></div>
+      </div>
+
+      <div id="notice" class="notice" hidden></div>
+      <div id="game-grid" class="game-grid" aria-live="polite"></div>
+      <noscript><p class="notice">Ative o JavaScript para abrir o catálogo.</p></noscript>
+    </section>
+  </main>
+
+  <footer><span>Arcade Vault</span><span>Emulação executada no seu aparelho</span></footer>
+  <script src="assets/app.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,12 @@
+import fs from "node:fs";
+const required=["index.html","player.html","assets/styles.css","assets/app.js","catalog.json"];
+for(const file of required){if(!fs.existsSync(file))throw new Error(`Arquivo obrigatório ausente: ${file}`)}
+const index=fs.readFileSync("index.html","utf8"),player=fs.readFileSync("player.html","utf8"),app=fs.readFileSync("assets/app.js","utf8");
+const catalog=JSON.parse(fs.readFileSync("catalog.json","utf8"));
+if(!index.includes('name="viewport"')||!player.includes('name="viewport"'))throw new Error("Viewport móvel ausente");
+if(!player.includes("https://cdn.emulatorjs.org/stable/data/"))throw new Error("EmulatorJS não usa o canal estável");
+if([index,player,app].some(text=>text.includes("api.github.com")||text.includes("/latest/data/")))throw new Error("Dependência instável detectada");
+if(!Array.isArray(catalog.games)||catalog.games.length<1)throw new Error("Catálogo vazio");
+const ids=new Set(),paths=new Set();
+for(const game of catalog.games){if(!game.id||!game.title||!game.system||!game.core||!game.path||!game.size)throw new Error(`Entrada incompleta: ${JSON.stringify(game)}`);if(ids.has(game.id))throw new Error(`ID duplicado: ${game.id}`);ids.add(game.id);if(paths.has(game.path))throw new Error(`Caminho duplicado: ${game.path}`);paths.add(game.path);if(!fs.existsSync(game.path))throw new Error(`ROM ausente: ${game.path}`);if(fs.statSync(game.path).size<65536)throw new Error(`Arquivo inválido ou incompleto: ${game.path}`);if(game.bios&&!fs.existsSync(game.bios))throw new Error(`BIOS ausente: ${game.bios}`)}
+console.log(`Validação concluída: ${catalog.games.length} jogos, interface móvel e caminhos íntegros.`);
