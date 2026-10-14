@@ -5,6 +5,7 @@ const index=fs.readFileSync("index.html","utf8"),player=fs.readFileSync("player.
 const catalog=JSON.parse(fs.readFileSync("catalog.json","utf8"));
 if(!index.includes('name="viewport"')||!player.includes('name="viewport"'))throw new Error("Viewport móvel ausente");
 if(!player.includes("https://cdn.emulatorjs.org/stable/data/"))throw new Error("EmulatorJS não usa o canal estável");
+if(!player.includes("EJS_cacheConfig={enabled:false")||!player.includes("EJS_disableLocalStorage=true"))throw new Error("Player permite armazenamento persistente");
 if([index,player,app].some(text=>text.includes("api.github.com")||text.includes("/latest/data/")))throw new Error("Dependência instável detectada");
 if(!Array.isArray(catalog.games)||catalog.games.length<1)throw new Error("Catálogo vazio");
 const ids=new Set(),paths=new Set();

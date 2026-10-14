@@ -20,7 +20,7 @@
         <div>
           <p class="eyebrow">PRONTO PARA CARREGAR</p>
           <h1 id="message-title">Preparando…</h1>
-          <p id="message-text">O arquivo será baixado somente depois que você tocar em iniciar.</p>
+          <p id="message-text">O jogo será carregado temporariamente no navegador. Nada será instalado ou salvo na pasta de downloads.</p>
           <button class="play-btn" id="start-game" type="button" disabled>Iniciar jogo</button>
           <div class="loading-line" id="loading-line" hidden><i></i></div>
         </div>
@@ -33,8 +33,8 @@
     const systemNames={capcom:"Capcom",midway:"Midway",neogeo:"Neo Geo"};let selected;
     function fail(text){messageTitle.textContent="Não foi possível abrir";messageText.textContent=text;start.hidden=true;line.hidden=true}
     fetch("catalog.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error();return r.json()}).then(data=>{selected=data.games.find(game=>game.id===id);if(!selected){fail("Esse jogo não existe no catálogo atual.");return}title.textContent=selected.title;system.textContent=`${systemNames[selected.system]||selected.system} · ${Math.round(selected.size/1048576)} MB`;messageTitle.textContent=selected.title;document.title=`${selected.title} · Arcade Vault`;start.disabled=false}).catch(()=>fail("O catálogo está indisponível. Volte e atualize a página."));
-    start.addEventListener("click",()=>{if(!selected)return;start.disabled=true;start.textContent="Carregando…";line.hidden=false;messageText.textContent=selected.size>65000000?"Este é um arquivo grande. No 4G, o carregamento pode demorar e consumir muitos dados.":"Baixando o jogo e preparando o emulador…";
-      window.EJS_player="#game";window.EJS_core=selected.core;window.EJS_gameName=selected.id;window.EJS_gameUrl=new URL(selected.path,document.baseURI).href;window.EJS_pathtodata="https://cdn.emulatorjs.org/stable/data/";window.EJS_startOnLoaded=true;window.EJS_fullscreenOnLoaded=false;window.EJS_language="pt-BR";window.EJS_disableAutoLang=true;window.EJS_volume=.7;window.EJS_askBeforeExit=false;if(selected.bios)window.EJS_biosUrl=new URL(selected.bios,document.baseURI).href;
+    start.addEventListener("click",()=>{if(!selected)return;start.disabled=true;start.textContent="Carregando…";line.hidden=false;messageText.textContent=selected.size>65000000?"Este é um jogo pesado. No 4G, o carregamento temporário pode demorar e consumir muitos dados.":"Carregando temporariamente o jogo e preparando o emulador…";
+      window.EJS_player="#game";window.EJS_core=selected.core;window.EJS_gameName=selected.id;window.EJS_gameUrl=new URL(selected.path,document.baseURI).href;window.EJS_pathtodata="https://cdn.emulatorjs.org/stable/data/";window.EJS_startOnLoaded=true;window.EJS_fullscreenOnLoaded=false;window.EJS_language="pt-BR";window.EJS_disableAutoLang=true;window.EJS_volume=.7;window.EJS_askBeforeExit=false;window.EJS_disableLocalStorage=true;window.EJS_cacheConfig={enabled:false,cacheMaxSizeMB:0,cacheMaxAgeMins:0};if(selected.bios)window.EJS_biosUrl=new URL(selected.bios,document.baseURI).href;
       window.EJS_ready=()=>{message.hidden=true};window.EJS_onGameStart=()=>{message.hidden=true};
       const observer=new MutationObserver(()=>{const text=document.querySelector("#game")?.textContent||"";if(/falha ao iniciar|failed to start/i.test(text)){observer.disconnect();fail("A ROM não iniciou com o núcleo configurado. Ela será marcada para revisão, sem travar o restante do catálogo.")}});observer.observe(document.querySelector("#game"),{childList:true,subtree:true,characterData:true});
       const loader=document.createElement("script");loader.src="https://cdn.emulatorjs.org/stable/data/loader.js";loader.onerror=()=>fail("O serviço do emulador não respondeu. Verifique sua internet e tente novamente.");document.body.appendChild(loader);
