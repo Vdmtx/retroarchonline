@@ -1,11 +1,12 @@
 import fs from "node:fs";
 const required=["index.html","player.html","assets/styles.css","assets/app.js","catalog.json"];
 for(const file of required){if(!fs.existsSync(file))throw new Error(`Arquivo obrigatório ausente: ${file}`)}
-const index=fs.readFileSync("index.html","utf8"),player=fs.readFileSync("player.html","utf8"),app=fs.readFileSync("assets/app.js","utf8");
+const index=fs.readFileSync("index.html","utf8"),player=fs.readFileSync("player.html","utf8"),styles=fs.readFileSync("assets/styles.css","utf8"),app=fs.readFileSync("assets/app.js","utf8");
 const catalog=JSON.parse(fs.readFileSync("catalog.json","utf8"));
 if(!index.includes('name="viewport"')||!player.includes('name="viewport"'))throw new Error("Viewport móvel ausente");
 if(!player.includes("https://cdn.emulatorjs.org/stable/data/"))throw new Error("EmulatorJS não usa o canal estável");
 if(!player.includes("EJS_cacheConfig={enabled:false")||!player.includes("EJS_disableLocalStorage=true"))throw new Error("Player permite armazenamento persistente");
+if(!player.includes('game.querySelector("canvas")')||!styles.includes(".player-message[hidden]"))throw new Error("Player não possui proteção para liberar a tela após iniciar");
 if([index,player,app].some(text=>text.includes("api.github.com")||text.includes("/latest/data/")))throw new Error("Dependência instável detectada");
 if(!Array.isArray(catalog.games)||catalog.games.length<1)throw new Error("Catálogo vazio");
 const ids=new Set(),paths=new Set();
