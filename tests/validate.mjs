@@ -12,7 +12,8 @@ if(!player.includes('selected.system==="neogeo"')||!player.includes('EJS_gamePar
 if(player.includes("EJS_gameParentUrl=new URL(selected.bios")||player.includes("EJS_biosUrl=new URL(selected.bios"))throw new Error("Player ainda extrai o conjunto-pai do Neo Geo");
 if(!player.includes("EJS_VirtualGamepadSettings=["))throw new Error("Controle arcade móvel personalizado ausente");
 for(let button=1;button<=6;button++)if(!player.includes(`id:"arcade-${button}"`))throw new Error(`Botão arcade ${button} ausente`);
-for(const profile of ['capcom:[1,9,10,0,8,11]','neogeo:[1,10,9,0,11,8]','midway:[1,9,10,0,8,11]'])if(!player.includes(profile))throw new Error(`Perfil de controle ausente: ${profile}`);
+for(const profile of ['capcom:[1,9,10,0,8,11]','neogeo:[1,10,9,0,11,8]','midwayClassic:[1,9,10,0,9,11]','midwayRun:[1,9,10,0,8,11]'])if(!player.includes(profile))throw new Error(`Perfil de controle ausente: ${profile}`);
+if(!player.includes('new Set(["mk","mk2","mk2k"])')||!player.includes('midwayClassicGames.has(selected.id)'))throw new Error("MK1 e MK2 não possuem o perfil Midway clássico com Defesa duplicada");
 for(let button=0;button<6;button++)if(!player.includes(`input_value:controls[${button}]`))throw new Error(`Botão arcade ${button+1} não usa o perfil da plataforma`);
 if(!player.includes('text:"Ficha",id:"select"')||!player.includes('text:"Start",id:"start"'))throw new Error("Ficha ou Start ausente do controle móvel");
 if([index,player,app].some(text=>text.includes("api.github.com")||text.includes("/latest/data/")))throw new Error("Dependência instável detectada");

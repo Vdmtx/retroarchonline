@@ -39,8 +39,9 @@
       const controlProfiles={
         capcom:[1,9,10,0,8,11],
         neogeo:[1,10,9,0,11,8],
-        midway:[1,9,10,0,8,11]
-      },controls=controlProfiles[selected.system]||controlProfiles.capcom;
+        midwayClassic:[1,9,10,0,9,11],
+        midwayRun:[1,9,10,0,8,11]
+      },midwayClassicGames=new Set(["mk","mk2","mk2k"]),controls=selected.system==="midway"?(midwayClassicGames.has(selected.id)?controlProfiles.midwayClassic:controlProfiles.midwayRun):(controlProfiles[selected.system]||controlProfiles.capcom);
       window.EJS_VirtualGamepadSettings=[
         {type:"button",text:"1",id:"arcade-1",location:"right",right:145,top:0,bold:true,input_value:controls[0]},
         {type:"button",text:"2",id:"arcade-2",location:"right",right:75,top:0,bold:true,input_value:controls[1]},
